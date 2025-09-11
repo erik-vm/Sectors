@@ -3,14 +3,14 @@ package vm.erik.sectors.enums;
 import lombok.Getter;
 
 @Getter
-public enum Role {
+public enum RoleName {
     USER("USER"),
     ADMIN("ADMIN");
 
 
     private final String displayName;
 
-    Role(String displayName) {
+    RoleName(String displayName) {
         this.displayName = displayName;
     }
 
