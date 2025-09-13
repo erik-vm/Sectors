@@ -34,11 +34,6 @@ public class SecurityConfig {
                 .roles("ADMIN", "USER")
                 .build();
 
-        UserDetails manager = User.builder()
-                .username("manager")
-                .password(passwordEncoder.encode("manager"))
-                .roles("MANAGER", "USER")
-                .build();
 
         UserDetails user = User.builder()
                 .username("user")
@@ -46,7 +41,7 @@ public class SecurityConfig {
                 .roles("USER")
                 .build();
 
-        return new InMemoryUserDetailsManager(admin, manager, user);
+        return new InMemoryUserDetailsManager(admin, user);
     }
 
     @Bean
@@ -111,7 +106,6 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .accessDeniedPage("/access-denied")
                 );
-
 
 
         return http.build();

@@ -44,23 +44,5 @@ public class UserSubmission extends BaseEntity {
     private Set<Sector> selectedSectors = new HashSet<>();
 
 
-    public void addSector(Sector sector) {
-        if (sector != null) {
-            this.selectedSectors.add(sector);
-            sector.getUserSubmissions().add(this);
-        }
-    }
 
-    public void removeSector(Sector sector) {
-        if (sector != null) {
-            this.selectedSectors.remove(sector);
-            sector.getUserSubmissions().remove(this);
-        }
-    }
-
-    public void clearSectors() {
-        for (Sector sector : new HashSet<>(selectedSectors)) {
-            removeSector(sector);
-        }
-    }
 }

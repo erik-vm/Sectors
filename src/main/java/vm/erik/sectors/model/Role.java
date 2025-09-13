@@ -34,32 +34,7 @@ public class Role extends BaseEntity{
     @Builder.Default
     private Set<User> users = new HashSet<>();
 
-
-    public Role(RoleName roleName) {
-        this.roleName = roleName;
-        this.description = roleName.getDisplayName();
-        this.users = new HashSet<>();
-    }
-
-    public Role(RoleName roleName, String description) {
-        this.roleName = roleName;
-        this.description = description;
-        this.users = new HashSet<>();
-    }
-
-
-    public void addUser(User user) {
-        this.users.add(user);
-        user.getRoles().add(this);
-    }
-
-    public void removeUser(User user) {
-        this.users.remove(user);
-        user.getRoles().remove(this);
-    }
-
-
-    public String getAuthority() {
-        return roleName != null ? roleName.getAuthority() : null;
+    public RoleName getName() {
+        return roleName;
     }
 }

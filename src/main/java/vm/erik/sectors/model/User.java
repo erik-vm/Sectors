@@ -1,9 +1,8 @@
 package vm.erik.sectors.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Builder
-@ToString(exclude = {"submissions", "password"}) // Exclude password from toString for security
+@ToString(exclude = {"submissions", "password"})
 public class User extends BaseEntity implements UserDetails {
 
 
@@ -45,10 +44,8 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "password", nullable = false)
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 255, message = "Password must be at least 8 characters")
+    @JsonIgnore
     private String password;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private Person person;
 
     @Column(name = "is_active", nullable = false)
     @Builder.Default
@@ -69,12 +66,9 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Person person;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
@@ -85,7 +79,7 @@ public class User extends BaseEntity implements UserDetails {
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @Builder.Default
     private Set<UserSubmission> submissions = new HashSet<>();
 
@@ -97,52 +91,9 @@ public class User extends BaseEntity implements UserDetails {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public String getUsername() {
-        return username;
-    }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return !isExpired;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return !isLocked;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return !credentialsExpired;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return isActive;
-    }
-
-    // Convenience methods
-    public void addRole(Role role) {
-        roles.add(role);
-        role.getUsers().add(this);
-    }
-
-    public void removeRole(Role role) {
-        roles.remove(role);
-        role.getUsers().remove(this);
-    }
-
-    public boolean hasRole(String roleName) {
-        return roles.stream()
-                .anyMatch(role -> role.getRoleName().getDisplayName().equalsIgnoreCase(roleName));
-    }
-
-    public void updateLastLogin() {
-        this.lastLogin = LocalDateTime.now();
-    }
-
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    public UserSubmission getLatestSubmission() {
+        UserSubmission[] userSubmissions = submissions.toArray(new UserSubmission[0]);
+        return userSubmissions[userSubmissions.length - 1];
     }
 }

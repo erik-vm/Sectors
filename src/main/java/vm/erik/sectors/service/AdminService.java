@@ -8,16 +8,15 @@ import java.util.UUID;
 
 public interface AdminService {
 
-
     AdminStatsDto getAdminStats();
-
+    
     List<UserDetailsDto> getAllUsers();
-
+    
     List<UserDetailsDto> searchUsers(String searchTerm);
-
+    
     void blockUser(UUID userId);
-
+    
     void unblockUser(UUID userId);
-
+    
     UserDetailsDto getUserDetails(UUID userId);
 }

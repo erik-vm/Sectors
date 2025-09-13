@@ -21,7 +21,7 @@ import java.util.*;
 public class Sector  extends BaseEntity{
 
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name", nullable = false)
     @NotBlank(message = "Sector name is required")
     @Size(max = 255, message = "Sector name must not exceed 255 characters")
     @EqualsAndHashCode.Include

@@ -20,7 +20,6 @@ public class AuthController {
 
     @GetMapping("/auth")
     public String authPage(Model model, Authentication authentication) {
-        // Redirect if already authenticated
         if (authentication != null && authentication.isAuthenticated()) {
             if (authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
@@ -30,7 +29,6 @@ public class AuthController {
             }
         }
 
-        // Add forms to model
         if (!model.containsAttribute("loginForm")) {
             model.addAttribute("loginForm", new LoginForm());
         }

@@ -5,21 +5,17 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
-import java.util.UUID;
-
 @Entity
 @Table(name = "people")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true,  callSuper = false)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString(exclude = {"user"})
 @Builder
 public class Person extends BaseEntity {
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private User user;
 
     @Column(name = "first_name", nullable = false, length = 50)
     @NotBlank(message = "First name is required")
@@ -28,4 +24,7 @@ public class Person extends BaseEntity {
     @Column(name = "last_name", nullable = false, length = 50)
     @NotBlank(message = "Last name is required")
     private String lastName;
+
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private User user;
 }
