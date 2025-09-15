@@ -14,7 +14,7 @@ import java.util.UUID;
 @Builder
 public class UserDetailsDto {
 
-    private UUID id;
+    private Long id;
     private String username;
     private String email;
     private boolean isLocked;

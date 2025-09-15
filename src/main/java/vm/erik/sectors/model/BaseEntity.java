@@ -3,6 +3,7 @@ package vm.erik.sectors.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -13,9 +14,9 @@ import java.util.UUID;
 public abstract class BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+    @SequenceGenerator(name = "my_seq", sequenceName = "seq1", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "my_seq")
+    private Long id;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

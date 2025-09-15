@@ -1,32 +1,36 @@
 package vm.erik.sectors.service.impl;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import vm.erik.sectors.dto.AdminStatsDto;
 import vm.erik.sectors.dto.UserDetailsDto;
+import vm.erik.sectors.mapper.UserMapper;
 import vm.erik.sectors.model.User;
 import vm.erik.sectors.repository.UserRepository;
 import vm.erik.sectors.service.AdminService;
-import vm.erik.sectors.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
+@Transactional
 public class AdminServiceImpl implements AdminService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    public AdminServiceImpl(UserRepository userRepository) {
+    public AdminServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     @Override
     public AdminStatsDto getAdminStats() {
-        long totalUsers = userRepository.count();
-        long activeUsers = userRepository.countByIsActiveTrue();
-        long blockedUsers = userRepository.countByIsLockedTrue();
-        
+        List<User> users = userRepository.findAll();
+        long totalUsers = users.size();
+        long activeUsers = users.stream().filter(User::getIsActive).count();
+        long blockedUsers = users.stream().filter(User::getIsLocked).count();
+
         return AdminStatsDto.builder()
                 .totalUsers(totalUsers)
                 .activeUsers(activeUsers)
@@ -36,55 +40,29 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public List<UserDetailsDto> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(this::convertToUserDetailsDto)
-                .toList();
+        List<User> users = userRepository.findAll();
+        List<UserDetailsDto> userDetailsDtos = new ArrayList<>();
+        for (User user : users) {
+            userDetailsDtos.add(userMapper.toUserDetailsDTO(user));
+        }
+        return userDetailsDtos;
+
     }
 
     @Override
-    public List<UserDetailsDto> searchUsers(String searchTerm) {
-        return userRepository.findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(searchTerm, searchTerm)
-                .stream()
-                .map(this::convertToUserDetailsDto)
-                .toList();
+    public void blockStatusToggler(Long userId) {
+        User user = userRepository.findById(userId);
+        user.setIsActive(!user.getIsActive());
+        user.setIsLocked(!user.getIsLocked());
+        userRepository.saveUser(user);
     }
+
 
     @Override
-    public void blockUser(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setIsLocked(true);
-        userRepository.save(user);
+    public UserDetailsDto getUserDetails(Long userId) {
+        User user = userRepository.findById(userId);
+        return userMapper.toUserDetailsDTO(user);
     }
 
-    @Override
-    public void unblockUser(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setIsLocked(false);
-        userRepository.save(user);
-    }
 
-    @Override
-    public UserDetailsDto getUserDetails(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return convertToUserDetailsDto(user);
-    }
-
-    private UserDetailsDto convertToUserDetailsDto(User user) {
-        return UserDetailsDto.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .firstName(user.getPerson() != null ? user.getPerson().getFirstName() : null)
-                .lastName(user.getPerson() != null ? user.getPerson().getLastName() : null)
-                .isActive(user.getIsActive())
-                .isLocked(user.getIsLocked())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .lastLogin(user.getLastLogin())
-                .latestSubmission(user.getLatestSubmission())
-                .build();
-    }
 }

@@ -3,11 +3,13 @@ package vm.erik.sectors.controller;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
+@RequestMapping("/")
 public class HomeController {
 
-    @GetMapping("/")
+    @GetMapping()
     public String home(Authentication authentication) {
         // Redirect to appropriate dashboard based on authentication
         if (authentication != null && authentication.isAuthenticated()) {
@@ -18,12 +20,8 @@ public class HomeController {
                 return "redirect:/user";
             }
         }
-        
+
         return "redirect:/auth";
     }
 
-    @GetMapping("/home")
-    public String homePage() {
-        return "redirect:/";
-    }
 }

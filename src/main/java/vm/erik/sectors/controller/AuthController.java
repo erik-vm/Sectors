@@ -1,24 +1,30 @@
 package vm.erik.sectors.controller;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vm.erik.sectors.dto.LoginForm;
 import vm.erik.sectors.dto.RegisterForm;
 import vm.erik.sectors.service.AuthService;
 
 @Controller
-@RequiredArgsConstructor
+@RequestMapping("/auth")
 public class AuthController {
 
     private final AuthService authService;
 
-    @GetMapping("/auth")
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
+
+    @GetMapping()
     public String authPage(Model model, Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()) {
             if (authentication.getAuthorities().stream()
@@ -36,17 +42,23 @@ public class AuthController {
             model.addAttribute("registerForm", new RegisterForm());
         }
 
-        return "auth";
+        return "simple-auth";
     }
 
     @PostMapping("/register")
     public String register(@Valid @ModelAttribute RegisterForm registerForm,
-                          BindingResult result,
-                          RedirectAttributes redirectAttributes) {
-        
+                           BindingResult result,
+                           RedirectAttributes redirectAttributes) {
+
         if (result.hasErrors()) {
             redirectAttributes.addFlashAttribute("registerForm", registerForm);
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.registerForm", result);
+            return "redirect:/auth";
+        }
+
+        if (!registerForm.getPassword().equals(registerForm.getConfirmPassword())) {
+            redirectAttributes.addFlashAttribute("registerForm", registerForm);
+            redirectAttributes.addFlashAttribute("registerError", "Passwords do not match");
             return "redirect:/auth";
         }
 
@@ -61,20 +73,6 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/demo-login")
-    public String demoLogin(@RequestParam String userType) {
-        try {
-            if ("admin".equals(userType)) {
-                authService.loginAsDemo("admin");
-                return "redirect:/admin";
-            } else {
-                authService.loginAsDemo("user");
-                return "redirect:/user";
-            }
-        } catch (Exception e) {
-            return "redirect:/auth?error=Demo login failed";
-        }
-    }
 
     @GetMapping("/login")
     public String loginPage() {

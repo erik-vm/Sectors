@@ -2,6 +2,7 @@ package vm.erik.sectors.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -14,10 +15,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
+@PropertySource("classpath:/application.properties")
 public class SecurityConfig {
 
     @Bean
@@ -25,28 +29,15 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        // In-memory users for simplicity
-        UserDetails admin = User.builder()
-                .username("admin")
-                .password(passwordEncoder.encode("admin"))
-                .roles("ADMIN", "USER")
-                .build();
-
-
-        UserDetails user = User.builder()
-                .username("user")
-                .password(passwordEncoder.encode("user"))
-                .roles("USER")
-                .build();
-
-        return new InMemoryUserDetailsManager(admin, user);
-    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
 
     @Bean
@@ -57,20 +48,14 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
 
                         // Authentication endpoints
-                        .requestMatchers("/login", "/register", "/logout").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
 
                         // Public pages
-                        .requestMatchers("/", "/home", "/about", "/error").permitAll()
+                        .requestMatchers("/", "/error").permitAll()
 
                         // Role-based access for different endpoints
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/manager/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers("/sectors/**", "/profile/**").hasAnyRole("USER", "MANAGER", "ADMIN")
-
-                        // API endpoints (if you have REST APIs)
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/manager/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers("/api/**").hasAnyRole("USER", "MANAGER", "ADMIN")
+                        .requestMatchers("/user/**", "/sectors/**", "/profile/**").hasAnyRole("USER", "ADMIN")
 
                         // All other requests require authentication
                         .anyRequest().authenticated()
@@ -78,10 +63,10 @@ public class SecurityConfig {
 
                 // Form-based authentication
                 .formLogin(form -> form
-                        .loginPage("/login")
+                        .loginPage("/auth")
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/home", true)
-                        .failureUrl("/login?error=true")
+                        .defaultSuccessUrl("/", true)
+                        .failureUrl("/auth?error=true")
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .permitAll()
@@ -90,7 +75,7 @@ public class SecurityConfig {
                 // Logout configuration
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout=true")
+                        .logoutSuccessUrl("/auth?logout=true")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                         .permitAll()
@@ -100,6 +85,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false)
+                        .sessionRegistry(sessionRegistry())
                 )
 
                 // Exception handling
@@ -109,5 +95,23 @@ public class SecurityConfig {
 
 
         return http.build();
+    }
+
+
+    @Bean
+    public UserDetailsService userDetailService() {
+        UserDetails user = User.builder()
+                .username("user")
+                .password(passwordEncoder().encode("user"))
+                .roles("USER")
+                .build();
+
+        UserDetails admin = User.builder()
+                .username("admin")
+                .password(passwordEncoder().encode("admin"))
+                .roles("USER", "ADMIN")
+                .build();
+
+        return new InMemoryUserDetailsManager(user, admin);
     }
 }

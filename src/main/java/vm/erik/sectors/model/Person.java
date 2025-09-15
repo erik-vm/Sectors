@@ -25,6 +25,6 @@ public class Person extends BaseEntity {
     @NotBlank(message = "Last name is required")
     private String lastName;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "person", fetch = FetchType.LAZY)
     private User user;
 }

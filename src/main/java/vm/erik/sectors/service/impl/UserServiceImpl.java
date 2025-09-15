@@ -35,8 +35,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserById(UUID userId) {
-        return userRepository.findById(userId).orElse(null);
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId);
     }
 
     @Override
@@ -52,16 +52,18 @@ public class UserServiceImpl implements UserService {
         }
         
         user.setUpdatedAt(LocalDateTime.now());
-        userRepository.save(user);
+        userRepository.saveUser(user);
     }
 
     @Override
     public User findByUsername(String username) {
-        return userRepository.findByUsername(username).orElse(null);
+        return userRepository.findByUsername(username);
     }
 
     @Override
     public User findByEmail(String email) {
-        return userRepository.findByEmail(email).orElse(null);
+        return userRepository.findByEmail(email);
     }
+
+
 }

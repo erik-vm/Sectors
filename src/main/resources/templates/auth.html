@@ -40,44 +40,20 @@
                                 <span th:text="${loginError}">Login error message</span>
                             </div>
 
-                            <form th:action="@{/login}" method="post" th:object="${loginForm}">
+                            <form th:action="@{/login}" method="post">
                                 <div class="mb-3">
                                     <label for="loginUsername" class="form-label">Username</label>
-                                    <input type="text" class="form-control" id="loginUsername" th:field="*{username}"
+                                    <input type="text" class="form-control" id="loginUsername" name="username"
                                            placeholder="Enter your username" required>
-                                    <div th:if="${#fields.hasErrors('username')}" class="text-danger small"
-                                         th:errors="*{username}"></div>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="loginPassword" class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="loginPassword"
-                                           th:field="*{password}" placeholder="Enter your password" required>
-                                    <div th:if="${#fields.hasErrors('password')}" class="text-danger small"
-                                         th:errors="*{password}"></div>
+                                    <input type="password" class="form-control" id="loginPassword" name="password"
+                                           placeholder="Enter your password" required>
                                 </div>
 
                                 <button type="submit" class="btn btn-primary w-100 mb-3">Sign In</button>
-
-                                <!-- Demo Buttons -->
-                                <div class="row g-2">
-                                    <div class="col">
-                                        <form th:action="@{/demo-login}" method="post" class="d-inline w-100">
-                                            <input type="hidden" name="userType" value="user">
-                                            <button type="submit" class="btn btn-outline-secondary btn-sm w-100">Demo
-                                                User
-                                            </button>
-                                        </form>
-                                    </div>
-                                    <div class="col">
-                                        <form th:action="@{/demo-login}" method="post" class="d-inline w-100">
-                                            <input type="hidden" name="userType" value="admin">
-                                            <button type="submit" class="btn btn-outline-secondary btn-sm w-100">Demo
-                                                Admin
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
                             </form>
                         </div>
                     </div>
@@ -97,7 +73,7 @@
                                 <span th:text="${registerError}">Registration error message</span>
                             </div>
 
-                            <form th:action="@{/register}" method="post" th:object="${registerForm}">
+                            <form th:action="@{/auth/register}" method="post" th:object="${registerForm}">
                                 <div class="mb-3">
                                     <label for="registerUsername" class="form-label">Username</label>
                                     <input type="text" class="form-control" id="registerUsername" th:field="*{username}"

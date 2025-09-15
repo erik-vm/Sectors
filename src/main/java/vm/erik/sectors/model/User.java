@@ -68,6 +68,7 @@ public class User extends BaseEntity implements UserDetails {
 
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "person_id")
     private Person person;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})

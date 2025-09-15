@@ -1,11 +1,4 @@
 package vm.erik.sectors.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-import vm.erik.sectors.model.UserSubmission;
-
-import java.util.UUID;
-
-@Repository
-public interface UserSubmissionRepository extends JpaRepository<UserSubmission, UUID> {
+public interface UserSubmissionRepository {
 }
