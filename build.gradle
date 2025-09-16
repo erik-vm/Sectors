@@ -47,7 +47,6 @@ dependencies {
 
     // Database
     runtimeOnly 'org.postgresql:postgresql'
-    runtimeOnly 'org.hsqldb:hsqldb:2.7.4'
 
 
     // Test

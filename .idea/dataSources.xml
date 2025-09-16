@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="sectordb" uuid="aa47758e-1a1a-4fb6-b585-a0fa1a286a05">
-      <driver-ref>hsqldb.local</driver-ref>
+    <data-source source="LOCAL" name="sector_app_db@localhost" uuid="b0eaf80c-d355-447e-ba8f-450ced6a3040">
+      <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
-      <jdbc-driver>org.hsqldb.jdbc.JDBCDriver</jdbc-driver>
-      <jdbc-url>jdbc:hsqldb:mem:sectordb</jdbc-url>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/sector_app_db</jdbc-url>
+      <jdbc-additional-properties>
+        <property name="com.intellij.clouds.kubernetes.db.host.port" />
+        <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
+        <property name="com.intellij.clouds.kubernetes.db.container.port" />
+      </jdbc-additional-properties>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

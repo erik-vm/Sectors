@@ -20,8 +20,6 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
-@PropertySource("classpath:/application.properties")
 public class SecurityConfig {
 
     @Bean
@@ -98,20 +96,5 @@ public class SecurityConfig {
     }
 
 
-    @Bean
-    public UserDetailsService userDetailService() {
-        UserDetails user = User.builder()
-                .username("user")
-                .password(passwordEncoder().encode("user"))
-                .roles("USER")
-                .build();
 
-        UserDetails admin = User.builder()
-                .username("admin")
-                .password(passwordEncoder().encode("admin"))
-                .roles("USER", "ADMIN")
-                .build();
-
-        return new InMemoryUserDetailsManager(user, admin);
-    }
 }

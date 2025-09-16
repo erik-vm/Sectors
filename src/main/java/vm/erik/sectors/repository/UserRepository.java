@@ -1,29 +1,18 @@
 package vm.erik.sectors.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import vm.erik.sectors.model.User;
 
-import java.util.List;
-import java.util.Optional;
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
 
 
-public interface UserRepository {
+    boolean existsUserByUsername(String username);
 
+    boolean existsUserByEmail(String email);
 
-
-
-    void saveUser(User user);
-
-
-    List<User> findAll();
-
-
-    boolean isUsernameTaken(String username);
-
-    boolean isEmailTaken(String email);
-
-
-    User findById(Long userId);
+    User findByUsername(String username);
 
     User findByEmail(String email);
-    User findByUsername(String username);
 }

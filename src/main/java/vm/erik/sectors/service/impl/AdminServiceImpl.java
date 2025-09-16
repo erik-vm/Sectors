@@ -11,6 +11,7 @@ import vm.erik.sectors.service.AdminService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -51,17 +52,24 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public void blockStatusToggler(Long userId) {
-        User user = userRepository.findById(userId);
-        user.setIsActive(!user.getIsActive());
-        user.setIsLocked(!user.getIsLocked());
-        userRepository.saveUser(user);
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+        User updatedUser = user.get();
+        updatedUser.setIsActive(!updatedUser.getIsActive());
+        updatedUser.setIsLocked(!updatedUser.getIsLocked());
+        userRepository.save(updatedUser);
     }
 
 
     @Override
     public UserDetailsDto getUserDetails(Long userId) {
-        User user = userRepository.findById(userId);
-        return userMapper.toUserDetailsDTO(user);
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+        return userMapper.toUserDetailsDTO(user.get());
     }
 
 

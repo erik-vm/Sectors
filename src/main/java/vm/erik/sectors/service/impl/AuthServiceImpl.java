@@ -26,13 +26,12 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
 
     public AuthServiceImpl(UserRepository userRepository, PersonRepository personRepository,
-                          RoleRepository roleRepository,  PasswordEncoder passwordEncoder) {
+                           RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.personRepository = personRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
-
 
 
     @Override
@@ -50,9 +49,9 @@ public class AuthServiceImpl implements AuthService {
                 .build();
         person.setCreatedAt(LocalDateTime.now());
         person.setUpdatedAt(LocalDateTime.now());
-        person = personRepository.savePerson(person);
+        person = personRepository.save(person);
 
-        Role userRole = roleRepository.findByRoleName(RoleName.USER);
+        Role userRole = roleRepository.findByRoleName((RoleName.USER));
 
         User user = User.builder()
                 .username(registerForm.getUsername())
@@ -66,17 +65,17 @@ public class AuthServiceImpl implements AuthService {
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
 
-        userRepository.saveUser(user);
+        userRepository.save(user);
     }
 
 
     @Override
     public boolean isUsernameTaken(String username) {
-        return userRepository.isUsernameTaken(username);
+        return userRepository.existsUserByUsername((username));
     }
 
     @Override
     public boolean isEmailTaken(String email) {
-        return userRepository.isEmailTaken(email);
+        return userRepository.existsUserByEmail((email));
     }
 }

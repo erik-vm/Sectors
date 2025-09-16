@@ -1,5 +1,3 @@
-DROP SCHEMA PUBLIC CASCADE;
-
 -- Drop existing tables if they exist (for clean recreation)
 DROP TABLE IF EXISTS submission_sectors CASCADE;
 DROP TABLE IF EXISTS user_roles CASCADE;
@@ -11,7 +9,7 @@ DROP TABLE IF EXISTS roles CASCADE;
 
 DROP SEQUENCE IF EXISTS seq1;
 
-CREATE SEQUENCE seq1 AS INTEGER START WITH 1;
+CREATE SEQUENCE seq1 START WITH 1;
 -- =================================================================
 -- Roles Table (extends BaseEntity)
 -- =================================================================
@@ -43,10 +41,10 @@ CREATE TABLE users (
                        username VARCHAR(20) NOT NULL UNIQUE,
                        email VARCHAR(100) NOT NULL UNIQUE,
                        password VARCHAR(255) NOT NULL,
-                       is_active BOOLEAN NOT NULL DEFAULT 1,
-                       is_locked BOOLEAN NOT NULL DEFAULT 0,
-                       is_expired BOOLEAN NOT NULL DEFAULT 0,
-                       credentials_expired BOOLEAN NOT NULL DEFAULT 0,
+                       is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                       is_locked BOOLEAN NOT NULL DEFAULT FALSE,
+                       is_expired BOOLEAN NOT NULL DEFAULT FALSE,
+                       credentials_expired BOOLEAN NOT NULL DEFAULT FALSE,
                        last_login TIMESTAMP,
                        person_id BIGINT,
                        created_at TIMESTAMP NOT NULL,
@@ -76,7 +74,7 @@ CREATE TABLE sectors (
                          description VARCHAR(500),
                          level INTEGER NOT NULL DEFAULT 0,
                          sort_order INTEGER,
-                         is_active BOOLEAN NOT NULL DEFAULT 1,
+                         is_active BOOLEAN NOT NULL DEFAULT TRUE,
                          parent_id BIGINT,
                          created_at TIMESTAMP NOT NULL,
                          updated_at TIMESTAMP,
@@ -91,12 +89,12 @@ CREATE TABLE sectors (
 CREATE TABLE user_submissions (
                                   id BIGINT NOT NULL PRIMARY KEY DEFAULT nextval('seq1'),
                                   agreed_to_terms BOOLEAN NOT NULL,
-                                  is_active BOOLEAN NOT NULL DEFAULT 1,
+                                  is_active BOOLEAN NOT NULL DEFAULT TRUE,
                                   user_id BIGINT NOT NULL,
                                   created_at TIMESTAMP NOT NULL,
                                   updated_at TIMESTAMP,
                                   CONSTRAINT fk_user_submissions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                                  CONSTRAINT ck_user_submissions_terms CHECK (agreed_to_terms = 1)
+                                  CONSTRAINT ck_user_submissions_terms CHECK (agreed_to_terms = TRUE)
 );
 
 -- =================================================================
