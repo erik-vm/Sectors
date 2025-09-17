@@ -35,40 +35,36 @@ public class AuthController {
             }
         }
 
-        if (!model.containsAttribute("loginForm")) {
-            model.addAttribute("loginForm", new LoginForm());
-        }
-        if (!model.containsAttribute("registerForm")) {
-            model.addAttribute("registerForm", new RegisterForm());
+        if (!model.containsAttribute("userRegistration")) {
+            model.addAttribute("userRegistration", new RegisterForm());
         }
 
-        return "simple-auth";
+        return "auth/combined";
     }
 
     @PostMapping("/register")
-    public String register(@Valid @ModelAttribute RegisterForm registerForm,
+    public String register(@Valid @ModelAttribute("userRegistration") RegisterForm registerForm,
                            BindingResult result,
                            RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("registerForm", registerForm);
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.registerForm", result);
+            redirectAttributes.addFlashAttribute("userRegistration", registerForm);
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.userRegistration", result);
             return "redirect:/auth";
         }
 
         if (!registerForm.getPassword().equals(registerForm.getConfirmPassword())) {
-            redirectAttributes.addFlashAttribute("registerForm", registerForm);
-            redirectAttributes.addFlashAttribute("registerError", "Passwords do not match");
+            redirectAttributes.addFlashAttribute("userRegistration", registerForm);
+            redirectAttributes.addFlashAttribute("registrationError", "Passwords do not match");
             return "redirect:/auth";
         }
 
         try {
             authService.registerUser(registerForm);
-            redirectAttributes.addFlashAttribute("successMessage", "Account created successfully! Please login.");
-            return "redirect:/auth";
+            return "redirect:/auth?registered";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("registerForm", registerForm);
-            redirectAttributes.addFlashAttribute("registerError", e.getMessage());
+            redirectAttributes.addFlashAttribute("userRegistration", registerForm);
+            redirectAttributes.addFlashAttribute("registrationError", e.getMessage());
             return "redirect:/auth";
         }
     }

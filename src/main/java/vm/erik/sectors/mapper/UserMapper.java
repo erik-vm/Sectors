@@ -9,6 +9,7 @@ public class UserMapper {
 
     public UserDetailsDto toUserDetailsDTO (User user){
         return UserDetailsDto.builder()
+                .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .isLocked(user.getIsLocked())
@@ -17,8 +18,8 @@ public class UserMapper {
                 .updatedAt(user.getUpdatedAt())
                 .lastLogin(user.getLastLogin())
                 .latestSubmission(user.getLatestSubmission())
-                .firstName(user.getPerson().getFirstName())
-                .lastName(user.getPerson().getLastName())
+                .firstName(user.getPerson() != null ? user.getPerson().getFirstName() : null)
+                .lastName(user.getPerson() != null ? user.getPerson().getLastName() : null)
                 .build();
     }
 

@@ -21,7 +21,7 @@ public class HomeController {
             }
         }
 
-        return "redirect:/auth";
+        return "home/index";
     }
 
 }

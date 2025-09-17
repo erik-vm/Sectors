@@ -17,23 +17,17 @@ public class AdminController {
     }
 
     @GetMapping
-    public String adminDashboard(Model model) {
-        return "simple-admin";
-    }
-
-    @GetMapping("/dashboard")
     public String adminDashboard(@RequestParam(required = false) String search, Model model) {
         // Get admin statistics
         var stats = adminService.getAdminStats();
         model.addAttribute("stats", stats);
 
-        // Get users (with search if provided)
-        var users = search != null && !search.trim().isEmpty();
-
+        // Get all users
+        var users = adminService.getAllUsers();
         model.addAttribute("users", users);
         model.addAttribute("searchTerm", search);
 
-        return "simple-admin";
+        return "admin/dashboard";
     }
 
     @PostMapping("/block")

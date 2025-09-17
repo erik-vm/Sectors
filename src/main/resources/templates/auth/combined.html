@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In / Register - Sectors Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .auth-container {
+            max-width: 450px;
+            margin: 2rem auto;
+        }
+        .auth-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .nav-pills .nav-link {
+            border-radius: 10px;
+            color: #6c757d;
+        }
+        .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .form-floating .form-control {
+            border-radius: 10px;
+        }
+        .btn-auth {
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="fas fa-industry me-2"></i>Sectors Management
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="auth-container">
+            <div class="card auth-card">
+                <div class="card-body p-4">
+                    <!-- Tab Navigation -->
+                    <ul class="nav nav-pills nav-justified mb-4" id="authTabs">
+                        <li class="nav-item">
+                            <button class="nav-link active" id="signin-tab" data-bs-toggle="pill" data-bs-target="#signin" type="button">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="register-tab" data-bs-toggle="pill" data-bs-target="#register" type="button">
+                                <i class="fas fa-user-plus me-2"></i>Register
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="authTabsContent">
+                        <!-- Sign In Tab -->
+                        <div class="tab-pane fade show active" id="signin">
+                            <h4 class="text-center mb-4">Welcome Back!</h4>
+
+                            <!-- Error Messages -->
+                            <div th:if="${param.error}" class="alert alert-danger alert-dismissible fade show">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                Invalid username or password.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+
+                            <div th:if="${param.logout}" class="alert alert-success alert-dismissible fade show">
+                                <i class="fas fa-check-circle me-2"></i>
+                                You have been logged out successfully.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+
+                            <form th:action="@{/login}" method="post">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                                    <label for="username">
+                                        <i class="fas fa-user me-2"></i>Username
+                                    </label>
+                                </div>
+
+                                <div class="form-floating mb-4">
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                                    <label for="password">
+                                        <i class="fas fa-lock me-2"></i>Password
+                                    </label>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-auth">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Register Tab -->
+                        <div class="tab-pane fade" id="register">
+                            <h4 class="text-center mb-4">Join Us Today!</h4>
+
+                            <!-- Registration Success -->
+                            <div th:if="${param.registered}" class="alert alert-success alert-dismissible fade show">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Registration successful! Please sign in.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+
+                            <!-- Validation Errors -->
+                            <div th:if="${registrationError}" class="alert alert-danger alert-dismissible fade show">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <span th:text="${registrationError}"></span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+
+                            <form th:action="@{/register}" method="post" th:object="${userRegistration}">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="text" class="form-control" id="firstName" th:field="*{firstName}" placeholder="First Name" required>
+                                            <label for="firstName">
+                                                <i class="fas fa-user me-2"></i>First Name
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="text" class="form-control" id="lastName" th:field="*{lastName}" placeholder="Last Name" required>
+                                            <label for="lastName">
+                                                <i class="fas fa-user me-2"></i>Last Name
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="regUsername" th:field="*{username}" placeholder="Username" required>
+                                    <label for="regUsername">
+                                        <i class="fas fa-user-circle me-2"></i>Username
+                                    </label>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <input type="email" class="form-control" id="email" th:field="*{email}" placeholder="Email" required>
+                                    <label for="email">
+                                        <i class="fas fa-envelope me-2"></i>Email
+                                    </label>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <input type="password" class="form-control" id="regPassword" th:field="*{password}" placeholder="Password" required>
+                                    <label for="regPassword">
+                                        <i class="fas fa-lock me-2"></i>Password
+                                    </label>
+                                </div>
+
+                                <div class="form-floating mb-4">
+                                    <input type="password" class="form-control" id="confirmPassword" th:field="*{confirmPassword}" placeholder="Confirm Password" required>
+                                    <label for="confirmPassword">
+                                        <i class="fas fa-lock me-2"></i>Confirm Password
+                                    </label>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-auth">
+                                        <i class="fas fa-user-plus me-2"></i>Register
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back to Home -->
+            <div class="text-center mt-3">
+                <a th:href="@{/}" class="text-decoration-none">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check URL parameters to determine which tab to show
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Auto-switch to register tab if URL has tab=register parameter
+        if (urlParams.get('tab') === 'register') {
+            const registerTab = new bootstrap.Tab(document.getElementById('register-tab'));
+            registerTab.show();
+        }
+
+        // Auto-switch to register tab if there's a registration error
+        if (document.querySelector('[th\\:if="${registrationError}"]')) {
+            const registerTab = new bootstrap.Tab(document.getElementById('register-tab'));
+            registerTab.show();
+        }
+
+        // Auto-switch to sign in tab if registration was successful
+        if (urlParams.has('registered')) {
+            setTimeout(() => {
+                const signinTab = new bootstrap.Tab(document.getElementById('signin-tab'));
+                signinTab.show();
+            }, 3000); // Switch to sign in after 3 seconds
+        }
+    </script>
+</body>
+</html>
