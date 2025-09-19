@@ -67,15 +67,25 @@
             </a>
 
             <div class="navbar-nav ms-auto">
-                <span class="navbar-text me-3 text-white">
-                    <i class="fas fa-user-shield me-1"></i>
-                    Admin: <span sec:authentication="name"></span>
-                </span>
-                <form th:action="@{/logout}" method="post" class="d-inline">
-                    <button type="submit" class="btn btn-outline-light btn-sm">
-                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+                <div class="dropdown">
+                    <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-shield me-1"></i>
+                        Admin: <span sec:authentication="name"></span>
                     </button>
-                </form>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" th:href="@{/admin/profile}">
+                            <i class="fas fa-user me-2"></i>Profile
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post" class="d-inline">
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
@@ -143,10 +153,10 @@
                 <div class="card stats-card h-100">
                     <div class="card-body text-center">
                         <div class="stats-icon text-info mb-3">
-                            <i class="fas fa-chart-line"></i>
+                            <i class="fas fa-user-shield"></i>
                         </div>
-                        <h3 class="fw-bold text-dark mb-1" th:text="${stats.completedProfiles ?: 0}">0</h3>
-                        <p class="text-muted mb-0">Complete Profiles</p>
+                        <h3 class="fw-bold text-dark mb-1" th:text="${stats.totalAdmins ?: 0}">0</h3>
+                        <p class="text-muted mb-0">Admin Users</p>
                     </div>
                 </div>
             </div>
@@ -164,15 +174,7 @@
                                 </h5>
                             </div>
                             <div class="col-md-6">
-                                <form method="get" th:action="@{/admin}">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control search-box" name="search"
-                                               th:value="${searchTerm}" placeholder="Search users...">
-                                        <button class="btn btn-primary" type="submit">
-                                            <i class="fas fa-search"></i>
-                                        </button>
-                                    </div>
-                                </form>
+                                <!-- Search functionality removed -->
                             </div>
                         </div>
                     </div>

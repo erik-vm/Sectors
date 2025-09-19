@@ -14,5 +14,5 @@ public class AdminStatsDto {
     private Long totalUsers;
     private Long activeUsers;
     private Long blockedUsers;
-    private Long completedProfiles;
+    private Long totalAdmins;
 }

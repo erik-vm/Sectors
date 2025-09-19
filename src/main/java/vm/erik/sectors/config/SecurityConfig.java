@@ -16,6 +16,7 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean

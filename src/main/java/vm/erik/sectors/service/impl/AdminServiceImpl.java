@@ -36,6 +36,7 @@ public class AdminServiceImpl implements AdminService {
                 .totalUsers(totalUsers)
                 .activeUsers(activeUsers)
                 .blockedUsers(blockedUsers)
+                .totalAdmins(getTotalAdminCount())
                 .build();
     }
 
@@ -47,7 +48,6 @@ public class AdminServiceImpl implements AdminService {
             userDetailsDtos.add(userMapper.toUserDetailsDTO(user));
         }
         return userDetailsDtos;
-
     }
 
     @Override
@@ -72,5 +72,9 @@ public class AdminServiceImpl implements AdminService {
         return userMapper.toUserDetailsDTO(user.get());
     }
 
+    @Override
+    public long getTotalAdminCount() {
+        return userRepository.countByRolesRoleName(vm.erik.sectors.enums.RoleName.ADMIN);
+    }
 
 }

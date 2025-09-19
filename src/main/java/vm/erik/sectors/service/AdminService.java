@@ -12,9 +12,10 @@ public interface AdminService {
 
     List<UserDetailsDto> getAllUsers();
 
-
     void blockStatusToggler(Long userId);
 
 
     UserDetailsDto getUserDetails(Long userId);
+
+    long getTotalAdminCount();
 }
