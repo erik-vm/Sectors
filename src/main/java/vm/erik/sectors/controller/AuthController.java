@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import vm.erik.sectors.dto.LoginForm;
 import vm.erik.sectors.dto.RegisterForm;
 import vm.erik.sectors.service.AuthService;
 
@@ -39,7 +38,7 @@ public class AuthController {
             model.addAttribute("userRegistration", new RegisterForm());
         }
 
-        return "auth/combined";
+        return "auth/auth";
     }
 
     @PostMapping("/register")

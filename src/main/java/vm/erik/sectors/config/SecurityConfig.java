@@ -39,10 +39,6 @@ public class SecurityConfig {
         return new SessionRegistryImpl();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository) {
-        return new vm.erik.sectors.service.impl.UserDetailService(userRepository);
-    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

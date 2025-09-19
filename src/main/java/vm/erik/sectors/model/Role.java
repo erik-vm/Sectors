@@ -34,6 +34,12 @@ public class Role extends BaseEntity{
     @Builder.Default
     private Set<User> users = new HashSet<>();
 
+    public Role(RoleName roleName, String description) {
+        this.roleName = roleName;
+        this.description = description;
+        this.users = new HashSet<>();
+    }
+
     public RoleName getName() {
         return roleName;
     }
