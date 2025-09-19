@@ -15,7 +15,11 @@ public interface UserSubmissionService {
 
     UserSubmission createSubmission(User user, UserSubmission submission);
 
+    UserSubmission createSubmission(User user, UserSubmission submission, List<Long> sectorIds);
+
     UserSubmission updateSubmission(User user, Long submissionId, UserSubmission updatedSubmission);
+
+    UserSubmission updateSubmission(User user, Long submissionId, UserSubmission updatedSubmission, List<Long> sectorIds);
 
     void deleteSubmission(User user, Long submissionId);
 

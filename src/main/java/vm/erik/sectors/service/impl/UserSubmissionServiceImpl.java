@@ -6,13 +6,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import vm.erik.sectors.model.Sector;
 import vm.erik.sectors.model.User;
 import vm.erik.sectors.model.UserSubmission;
+import vm.erik.sectors.repository.SectorRepository;
 import vm.erik.sectors.repository.UserSubmissionRepository;
 import vm.erik.sectors.service.UserSubmissionService;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +25,7 @@ import java.util.List;
 public class UserSubmissionServiceImpl implements UserSubmissionService {
 
     private final UserSubmissionRepository userSubmissionRepository;
+    private final SectorRepository sectorRepository;
 
     @Override
     public List<UserSubmission> getUserSubmissions(User user) {
@@ -48,6 +53,24 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
     }
 
     @Override
+    public UserSubmission createSubmission(User user, UserSubmission submission, List<Long> sectorIds) {
+        submission.setUser(user);
+        submission.setCreatedAt(LocalDateTime.now());
+        submission.setUpdatedAt(LocalDateTime.now());
+        submission.setIsActive(true);
+
+        if (sectorIds != null && !sectorIds.isEmpty()) {
+            Set<Sector> sectors = new HashSet<>();
+            for (Long sectorId : sectorIds) {
+                sectorRepository.findById(sectorId).ifPresent(sectors::add);
+            }
+            submission.setSelectedSectors(sectors);
+        }
+
+        return userSubmissionRepository.save(submission);
+    }
+
+    @Override
     public UserSubmission updateSubmission(User user, Long submissionId, UserSubmission updatedSubmission) {
         UserSubmission existingSubmission = getUserSubmission(user, submissionId);
 
@@ -59,6 +82,31 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
         existingSubmission.setAgreeToTerms(updatedSubmission.getAgreeToTerms());
         existingSubmission.setSelectedSectors(updatedSubmission.getSelectedSectors());
         existingSubmission.setUpdatedAt(LocalDateTime.now());
+
+        return userSubmissionRepository.save(existingSubmission);
+    }
+
+    @Override
+    public UserSubmission updateSubmission(User user, Long submissionId, UserSubmission updatedSubmission, List<Long> sectorIds) {
+        UserSubmission existingSubmission = getUserSubmission(user, submissionId);
+
+        if (existingSubmission == null) {
+            throw new EntityNotFoundException("Submission not found or doesn't belong to user");
+        }
+
+        existingSubmission.setName(updatedSubmission.getName());
+        existingSubmission.setAgreeToTerms(updatedSubmission.getAgreeToTerms());
+        existingSubmission.setUpdatedAt(LocalDateTime.now());
+
+        if (sectorIds != null && !sectorIds.isEmpty()) {
+            Set<Sector> sectors = new HashSet<>();
+            for (Long sectorId : sectorIds) {
+                sectorRepository.findById(sectorId).ifPresent(sectors::add);
+            }
+            existingSubmission.setSelectedSectors(sectors);
+        } else {
+            existingSubmission.setSelectedSectors(new HashSet<>());
+        }
 
         return userSubmissionRepository.save(existingSubmission);
     }

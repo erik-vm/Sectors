@@ -101,7 +101,7 @@
                                                 <div class="form-check">
                                                     <input class="form-check-input sector-checkbox" type="checkbox"
                                                            th:id="'sector_' + ${rootSector.id}"
-                                                           th:field="*{selectedSectors}" th:value="${rootSector.id}">
+                                                           name="selectedSectors" th:value="${rootSector.id}">
                                                     <label class="form-check-label fw-bold" th:for="'sector_' + ${rootSector.id}"
                                                            th:text="${rootSector.name}">Root Sector</label>
                                                 </div>
@@ -111,7 +111,7 @@
                                                     <div class="form-check ms-3">
                                                         <input class="form-check-input sector-checkbox" type="checkbox"
                                                                th:id="'sector_' + ${subSector.id}"
-                                                               th:field="*{selectedSectors}" th:value="${subSector.id}">
+                                                               name="selectedSectors" th:value="${subSector.id}">
                                                         <label class="form-check-label" th:for="'sector_' + ${subSector.id}"
                                                                th:text="${subSector.name}">Sub Sector</label>
                                                     </div>
@@ -121,7 +121,7 @@
                                                         <div th:each="subSubSector : ${subSector.children}" class="form-check ms-3">
                                                             <input class="form-check-input sector-checkbox" type="checkbox"
                                                                    th:id="'sector_' + ${subSubSector.id}"
-                                                                   th:field="*{selectedSectors}" th:value="${subSubSector.id}">
+                                                                   name="selectedSectors" th:value="${subSubSector.id}">
                                                             <label class="form-check-label small" th:for="'sector_' + ${subSubSector.id}"
                                                                    th:text="${subSubSector.name}">Sub-Sub Sector</label>
                                                         </div>

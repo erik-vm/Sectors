@@ -64,17 +64,21 @@ public class UserController {
     @PostMapping("/submission/new")
     public String createSubmission(@Valid @ModelAttribute UserSubmission submission,
                                    BindingResult result,
+                                   @RequestParam(required = false) List<Long> selectedSectors,
                                    Authentication authentication,
+                                   Model model,
                                    RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
+            model.addAttribute("user", userService.getCurrentUser(authentication));
+            model.addAttribute("sectors", sectorService.getAllSectorsHierarchy());
             return "user/submission-form";
         }
 
         User currentUser = userService.getCurrentUser(authentication);
 
         try {
-            userSubmissionService.createSubmission(currentUser, submission);
+            userSubmissionService.createSubmission(currentUser, submission, selectedSectors);
             redirectAttributes.addFlashAttribute("successMessage", "Submission created successfully!");
             return "redirect:/user/submissions";
         } catch (Exception e) {
@@ -118,17 +122,21 @@ public class UserController {
     public String updateSubmission(@PathVariable Long id,
                                    @Valid @ModelAttribute UserSubmission submission,
                                    BindingResult result,
+                                   @RequestParam(required = false) List<Long> selectedSectors,
                                    Authentication authentication,
+                                   Model model,
                                    RedirectAttributes redirectAttributes) {
 
         User currentUser = userService.getCurrentUser(authentication);
 
         if (result.hasErrors()) {
+            model.addAttribute("user", currentUser);
+            model.addAttribute("sectors", sectorService.getAllSectorsHierarchy());
             return "user/submission-form";
         }
 
         try {
-            userSubmissionService.updateSubmission(currentUser, id, submission);
+            userSubmissionService.updateSubmission(currentUser, id, submission, selectedSectors);
             redirectAttributes.addFlashAttribute("successMessage", "Submission updated successfully!");
             return "redirect:/user/submission/" + id;
         } catch (Exception e) {
