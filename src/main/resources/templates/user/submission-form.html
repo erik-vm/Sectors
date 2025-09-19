@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sector Submission - Sectors Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sector-checkbox {
+            transition: all 0.2s;
+        }
+        .sector-checkbox:hover {
+            background-color: #f8f9fa;
+        }
+        .terms-checkbox {
+            cursor: pointer;
+        }
+        .terms-checkbox:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .terms-link {
+            color: #667eea;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .terms-link:hover {
+            color: #5a67d8;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="fas fa-industry me-2"></i>Sectors Management
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link text-white" th:href="@{/user}">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="fw-bold text-dark">
+                    <i class="fas fa-plus-circle me-2 text-primary"></i>New Sector Submission
+                </h1>
+                <p class="text-muted">Please enter your name and select the sectors you are currently involved in.</p>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Submission Form -->
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-gradient-primary text-white py-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-file-alt me-2"></i>Submission Details
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form th:action="@{/user/submission/new}" method="post" th:object="${submission}">
+                            <!-- Name Field -->
+                            <div class="mb-4">
+                                <label for="name" class="form-label fw-bold">
+                                    <i class="fas fa-user me-2"></i>Name
+                                </label>
+                                <input type="text" class="form-control" id="name" th:field="*{name}"
+                                       placeholder="Enter your name" required>
+                                <div class="form-text">This will be displayed as the submitter of this form.</div>
+                            </div>
+
+                            <!-- Sectors Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-industry me-2"></i>Select Sectors
+                                </label>
+                                <p class="text-muted mb-3">Choose the sectors you are currently involved in:</p>
+
+                                <div class="row" th:if="${sectors != null}">
+                                    <div th:each="rootSector : ${sectors}" class="col-12 mb-3">
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <div class="form-check">
+                                                    <input class="form-check-input sector-checkbox" type="checkbox"
+                                                           th:id="'sector_' + ${rootSector.id}"
+                                                           th:field="*{selectedSectors}" th:value="${rootSector.id}">
+                                                    <label class="form-check-label fw-bold" th:for="'sector_' + ${rootSector.id}"
+                                                           th:text="${rootSector.name}">Root Sector</label>
+                                                </div>
+                                            </div>
+                                            <div class="card-body" th:if="${rootSector.children != null and not rootSector.children.isEmpty()}">
+                                                <div th:each="subSector : ${rootSector.children}" class="mb-2">
+                                                    <div class="form-check ms-3">
+                                                        <input class="form-check-input sector-checkbox" type="checkbox"
+                                                               th:id="'sector_' + ${subSector.id}"
+                                                               th:field="*{selectedSectors}" th:value="${subSector.id}">
+                                                        <label class="form-check-label" th:for="'sector_' + ${subSector.id}"
+                                                               th:text="${subSector.name}">Sub Sector</label>
+                                                    </div>
+
+                                                    <!-- Sub-sub sectors -->
+                                                    <div th:if="${subSector.children != null and not subSector.children.isEmpty()}" class="ms-4">
+                                                        <div th:each="subSubSector : ${subSector.children}" class="form-check ms-3">
+                                                            <input class="form-check-input sector-checkbox" type="checkbox"
+                                                                   th:id="'sector_' + ${subSubSector.id}"
+                                                                   th:field="*{selectedSectors}" th:value="${subSubSector.id}">
+                                                            <label class="form-check-label small" th:for="'sector_' + ${subSubSector.id}"
+                                                                   th:text="${subSubSector.name}">Sub-Sub Sector</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Terms Agreement -->
+                            <div class="mb-4">
+                                <div class="card border-primary">
+                                    <div class="card-body">
+                                        <div class="form-check">
+                                            <input class="form-check-input terms-checkbox" type="checkbox"
+                                                   th:field="*{agreeToTerms}" id="agreeToTerms" disabled required>
+                                            <label class="form-check-label" for="agreeToTerms">
+                                                I agree to the
+                                                <span class="terms-link" onclick="openTermsModal()">terms and conditions</span>
+                                            </label>
+                                        </div>
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Please click on the terms and conditions link to enable the checkbox.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a th:href="@{/user}" class="btn btn-outline-secondary me-md-2">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                                    <i class="fas fa-paper-plane me-2"></i>Submit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-gradient-primary text-white">
+                    <h5 class="modal-title" id="termsModalLabel">
+                        <i class="fas fa-handshake me-2"></i>Special Message
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-heart fa-4x text-danger mb-3"></i>
+                        <h2 class="fw-bold text-primary">Hire me please!</h2>
+                        <p class="lead text-muted">Thank you for considering our services.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Close
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="agreeToTerms()">
+                        <i class="fas fa-check me-2"></i>I agree!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function openTermsModal() {
+            const modal = new bootstrap.Modal(document.getElementById('termsModal'));
+            modal.show();
+        }
+
+        function agreeToTerms() {
+            // Enable the checkbox and check it
+            const checkbox = document.getElementById('agreeToTerms');
+            const submitBtn = document.getElementById('submitBtn');
+
+            checkbox.disabled = false;
+            checkbox.checked = true;
+            submitBtn.disabled = false;
+
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('termsModal'));
+            modal.hide();
+
+            // Update UI to show agreement
+            const termsCard = checkbox.closest('.card');
+            termsCard.classList.remove('border-primary');
+            termsCard.classList.add('border-success');
+        }
+
+        // Monitor checkbox changes to enable/disable submit button
+        document.getElementById('agreeToTerms').addEventListener('change', function() {
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = !this.checked;
+        });
+    </script>
+</body>
+</html>

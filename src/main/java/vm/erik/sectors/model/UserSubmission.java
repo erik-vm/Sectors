@@ -13,11 +13,13 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true,  callSuper = false)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Builder
 @ToString(exclude = {"user", "selectedSectors"})
 public class UserSubmission extends BaseEntity {
 
+    @Column(name = "name", nullable = false)
+    private String name;
 
     @Column(name = "agreed_to_terms", nullable = false)
     @NotNull(message = "Agreement to terms is required")
@@ -42,7 +44,6 @@ public class UserSubmission extends BaseEntity {
     )
     @Builder.Default
     private Set<Sector> selectedSectors = new HashSet<>();
-
 
 
 }

@@ -88,6 +88,7 @@ CREATE TABLE sectors (
 -- =================================================================
 CREATE TABLE user_submissions (
                                   id BIGINT NOT NULL PRIMARY KEY DEFAULT nextval('seq1'),
+                                  name VARCHAR(255) NOT NULL,
                                   agreed_to_terms BOOLEAN NOT NULL,
                                   is_active BOOLEAN NOT NULL DEFAULT TRUE,
                                   user_id BIGINT NOT NULL,
