@@ -1,7 +1,6 @@
 package vm.erik.sectors.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.HashSet;
@@ -22,7 +21,6 @@ public class UserSubmission extends BaseEntity {
     private String name;
 
     @Column(name = "agreed_to_terms", nullable = false)
-    @NotNull(message = "Agreement to terms is required")
     @Builder.Default
     private Boolean agreeToTerms = false;
 
@@ -33,7 +31,6 @@ public class UserSubmission extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @NotNull(message = "User is required")
     private User user;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})

@@ -1,9 +1,11 @@
 package vm.erik.sectors.service;
 
+import vm.erik.sectors.model.Sector;
 import vm.erik.sectors.model.User;
 import vm.erik.sectors.model.UserSubmission;
 
 import java.util.List;
+import java.util.Set;
 
 public interface UserSubmissionService {
 
@@ -24,4 +26,10 @@ public interface UserSubmissionService {
     void deleteSubmission(User user, Long submissionId);
 
     long getUserSubmissionsCount(User user);
+
+    /**
+     * Get only the most specific (deepest) selected sectors, excluding parent sectors
+     * that have selected children
+     */
+    Set<Sector> getMostSpecificSelectedSectors(UserSubmission submission);
 }

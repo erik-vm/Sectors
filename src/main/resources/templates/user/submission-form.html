@@ -31,6 +31,39 @@
         .terms-link:hover {
             color: #5a67d8;
         }
+        .sector-selection-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            background-color: #fff;
+        }
+        .sector-category {
+            border: 1px solid #e9ecef;
+            border-radius: 0.375rem;
+            background-color: #f8f9fa;
+        }
+        .sector-header {
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-radius: 0.375rem;
+        }
+        .sector-header:hover {
+            background-color: #e9ecef;
+        }
+        .sector-content {
+            padding: 0.5rem 0.75rem 0.75rem;
+            background-color: #fff;
+            border-top: 1px solid #e9ecef;
+        }
+        .collapse-icon {
+            transition: transform 0.2s;
+        }
+        .collapse-icon[aria-expanded="true"] {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -53,9 +86,10 @@
         <div class="row mb-4">
             <div class="col-12">
                 <h1 class="fw-bold text-dark">
-                    <i class="fas fa-plus-circle me-2 text-primary"></i>New Sector Submission
+                    <i th:class="${submission.id != null ? 'fas fa-edit me-2 text-primary' : 'fas fa-plus-circle me-2 text-primary'}"></i>
+                    <span th:text="${submission.id != null ? 'Edit Sector Submission' : 'New Sector Submission'}">New Sector Submission</span>
                 </h1>
-                <p class="text-muted">Please enter your name and select the sectors you are currently involved in.</p>
+                <p class="text-muted" th:text="${submission.id != null ? 'Update your name and sector selections below.' : 'Please enter your name and select the sectors you are currently involved in.'}">Please enter your name and select the sectors you are currently involved in.</p>
             </div>
         </div>
 
@@ -76,7 +110,7 @@
                         </h5>
                     </div>
                     <div class="card-body p-4">
-                        <form th:action="@{/user/submission/new}" method="post" th:object="${submission}">
+                        <form th:action="${submission.id != null ? '/user/submission/' + submission.id + '/edit' : '/user/submission/new'}" method="post" th:object="${submission}">
                             <!-- Name Field -->
                             <div class="mb-4">
                                 <label for="name" class="form-label fw-bold">
@@ -92,38 +126,55 @@
                                 <label class="form-label fw-bold">
                                     <i class="fas fa-industry me-2"></i>Select Sectors
                                 </label>
-                                <p class="text-muted mb-3">Choose the sectors you are currently involved in:</p>
+                                <p class="text-muted mb-3">Choose the sectors you are currently involved in. Click on categories to expand/collapse:</p>
 
-                                <div class="row" th:if="${sectors != null}">
-                                    <div th:each="rootSector : ${sectors}" class="col-12 mb-3">
-                                        <div class="card">
-                                            <div class="card-header bg-light">
-                                                <div class="form-check">
-                                                    <input class="form-check-input sector-checkbox" type="checkbox"
-                                                           th:id="'sector_' + ${rootSector.id}"
-                                                           name="selectedSectors" th:value="${rootSector.id}">
-                                                    <label class="form-check-label fw-bold" th:for="'sector_' + ${rootSector.id}"
-                                                           th:text="${rootSector.name}">Root Sector</label>
+                                <div class="sector-selection-container" th:if="${sectors != null}">
+                                    <div th:each="rootSector, rootStat : ${sectors}" class="mb-2">
+                                        <div class="sector-category">
+                                            <!-- Root Sector Header (Collapsible) -->
+                                            <div class="sector-header" th:data-bs-target="'#collapse_' + ${rootStat.index}"
+                                                 data-bs-toggle="collapse" aria-expanded="false">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="form-check me-2">
+                                                        <input class="form-check-input sector-checkbox parent-sector" type="checkbox"
+                                                               th:id="'sector_' + ${rootSector.id}"
+                                                               name="selectedSectors" th:value="${rootSector.id}"
+                                                               th:checked="${submission.selectedSectors != null and submission.selectedSectors.contains(rootSector)}"
+                                                               onclick="event.stopPropagation();">
+                                                    </div>
+                                                    <label class="form-check-label fw-bold flex-grow-1" th:for="'sector_' + ${rootSector.id}"
+                                                           th:text="${rootSector.name}" onclick="event.stopPropagation();">Root Sector</label>
+                                                    <i class="fas fa-chevron-down collapse-icon"></i>
                                                 </div>
                                             </div>
-                                            <div class="card-body" th:if="${rootSector.children != null and not rootSector.children.isEmpty()}">
-                                                <div th:each="subSector : ${rootSector.children}" class="mb-2">
-                                                    <div class="form-check ms-3">
-                                                        <input class="form-check-input sector-checkbox" type="checkbox"
-                                                               th:id="'sector_' + ${subSector.id}"
-                                                               name="selectedSectors" th:value="${subSector.id}">
-                                                        <label class="form-check-label" th:for="'sector_' + ${subSector.id}"
-                                                               th:text="${subSector.name}">Sub Sector</label>
-                                                    </div>
 
-                                                    <!-- Sub-sub sectors -->
-                                                    <div th:if="${subSector.children != null and not subSector.children.isEmpty()}" class="ms-4">
-                                                        <div th:each="subSubSector : ${subSector.children}" class="form-check ms-3">
-                                                            <input class="form-check-input sector-checkbox" type="checkbox"
-                                                                   th:id="'sector_' + ${subSubSector.id}"
-                                                                   name="selectedSectors" th:value="${subSubSector.id}">
-                                                            <label class="form-check-label small" th:for="'sector_' + ${subSubSector.id}"
-                                                                   th:text="${subSubSector.name}">Sub-Sub Sector</label>
+                                            <!-- Collapsible Content -->
+                                            <div class="collapse" th:id="'collapse_' + ${rootStat.index}">
+                                                <div class="sector-content">
+                                                    <div th:each="subSector : ${rootSector.children}" class="subsector-group" th:if="${rootSector.children != null and not rootSector.children.isEmpty()}">
+                                                        <!-- Sub Sector -->
+                                                        <div class="form-check ms-3 mb-2">
+                                                            <input class="form-check-input sector-checkbox child-sector" type="checkbox"
+                                                                   th:id="'sector_' + ${subSector.id}"
+                                                                   name="selectedSectors" th:value="${subSector.id}"
+                                                                   th:checked="${submission.selectedSectors != null and submission.selectedSectors.contains(subSector)}"
+                                                                   th:data-parent="${rootSector.id}">
+                                                            <label class="form-check-label" th:for="'sector_' + ${subSector.id}"
+                                                                   th:text="${subSector.name}">Sub Sector</label>
+                                                        </div>
+
+                                                        <!-- Sub-sub sectors -->
+                                                        <div th:if="${subSector.children != null and not subSector.children.isEmpty()}" class="ms-4">
+                                                            <div th:each="subSubSector : ${subSector.children}" class="form-check ms-3 mb-1">
+                                                                <input class="form-check-input sector-checkbox grandchild-sector" type="checkbox"
+                                                                       th:id="'sector_' + ${subSubSector.id}"
+                                                                       name="selectedSectors" th:value="${subSubSector.id}"
+                                                                       th:checked="${submission.selectedSectors != null and submission.selectedSectors.contains(subSubSector)}"
+                                                                       th:data-parent="${subSector.id}"
+                                                                       th:data-grandparent="${rootSector.id}">
+                                                                <label class="form-check-label small" th:for="'sector_' + ${subSubSector.id}"
+                                                                       th:text="${subSubSector.name}">Sub-Sub Sector</label>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -139,7 +190,7 @@
                                     <div class="card-body">
                                         <div class="form-check">
                                             <input class="form-check-input terms-checkbox" type="checkbox"
-                                                   th:field="*{agreeToTerms}" id="agreeToTerms" disabled required>
+                                                   name="agreeToTerms" id="agreeToTerms" disabled required value="true">
                                             <label class="form-check-label" for="agreeToTerms">
                                                 I agree to the
                                                 <span class="terms-link" onclick="openTermsModal()">terms and conditions</span>
@@ -159,7 +210,8 @@
                                     <i class="fas fa-times me-2"></i>Cancel
                                 </a>
                                 <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
-                                    <i class="fas fa-paper-plane me-2"></i>Submit
+                                    <i th:class="${submission.id != null ? 'fas fa-save me-2' : 'fas fa-paper-plane me-2'}"></i>
+                                    <span th:text="${submission.id != null ? 'Update' : 'Submit'}">Submit</span>
                                 </button>
                             </div>
                         </form>
@@ -229,6 +281,76 @@
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = !this.checked;
         });
+
+        // Handle collapse icon rotation
+        document.addEventListener('DOMContentLoaded', function() {
+            const collapseElements = document.querySelectorAll('.collapse');
+            collapseElements.forEach(function(collapseEl) {
+                collapseEl.addEventListener('show.bs.collapse', function() {
+                    const header = document.querySelector('[data-bs-target="#' + this.id + '"]');
+                    const icon = header.querySelector('.collapse-icon');
+                    icon.style.transform = 'rotate(180deg)';
+                });
+
+                collapseEl.addEventListener('hide.bs.collapse', function() {
+                    const header = document.querySelector('[data-bs-target="#' + this.id + '"]');
+                    const icon = header.querySelector('.collapse-icon');
+                    icon.style.transform = 'rotate(0deg)';
+                });
+            });
+
+            // Handle parent-child sector selection
+            const sectorCheckboxes = document.querySelectorAll('.sector-checkbox');
+            sectorCheckboxes.forEach(function(checkbox) {
+                checkbox.addEventListener('change', function() {
+                    handleSectorSelection(this);
+                });
+            });
+        });
+
+        function handleSectorSelection(checkbox) {
+            const isChecked = checkbox.checked;
+            const sectorId = checkbox.value;
+
+            if (checkbox.classList.contains('child-sector') || checkbox.classList.contains('grandchild-sector')) {
+                // When child/grandchild is selected, auto-select parent
+                if (isChecked) {
+                    // Select parent
+                    const parentId = checkbox.getAttribute('data-parent');
+                    if (parentId) {
+                        const parentCheckbox = document.querySelector('input[value="' + parentId + '"]');
+                        if (parentCheckbox) {
+                            parentCheckbox.checked = true;
+                        }
+                    }
+
+                    // If grandchild, also select grandparent
+                    if (checkbox.classList.contains('grandchild-sector')) {
+                        const grandparentId = checkbox.getAttribute('data-grandparent');
+                        if (grandparentId) {
+                            const grandparentCheckbox = document.querySelector('input[value="' + grandparentId + '"]');
+                            if (grandparentCheckbox) {
+                                grandparentCheckbox.checked = true;
+                            }
+                        }
+                    }
+                }
+            } else if (checkbox.classList.contains('parent-sector')) {
+                // When parent is unchecked, uncheck all children
+                if (!isChecked) {
+                    const childCheckboxes = document.querySelectorAll('input[data-parent="' + sectorId + '"]');
+                    childCheckboxes.forEach(function(childCheckbox) {
+                        childCheckbox.checked = false;
+
+                        // Also uncheck grandchildren
+                        const grandchildCheckboxes = document.querySelectorAll('input[data-parent="' + childCheckbox.value + '"]');
+                        grandchildCheckboxes.forEach(function(grandchildCheckbox) {
+                            grandchildCheckbox.checked = false;
+                        });
+                    });
+                }
+            }
+        }
     </script>
 </body>
 </html>

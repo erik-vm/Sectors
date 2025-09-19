@@ -38,6 +38,31 @@
             color: #868e96;
             font-size: 0.85rem;
         }
+        .sector-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .sector-level-0 {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        .sector-level-1 {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+            border: 1px solid #ce93d8;
+        }
+        .sector-level-2 {
+            background-color: #e8f5e8;
+            color: #388e3c;
+            border: 1px solid #a5d6a7;
+        }
+        .sector-path {
+            margin-left: 1rem;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -70,11 +95,6 @@
                     <a th:href="@{/user/submission/{id}/edit(id=${submission.id})}" class="btn btn-outline-primary">
                         <i class="fas fa-edit me-2"></i>Edit
                     </a>
-                    <button class="btn btn-outline-danger" onclick="confirmDelete()"
-                            th:data-submission-id="${submission.id}"
-                            th:data-submission-name="${submission.name}">
-                        <i class="fas fa-trash me-2"></i>Delete
-                    </button>
                 </div>
             </div>
         </div>
@@ -151,17 +171,17 @@
                     <div class="card-body d-flex flex-column justify-content-center">
                         <div class="text-center">
                             <div class="mb-4">
-                                <h2 class="fw-bold text-primary mb-1" th:text="${submission.selectedSectors?.size() ?: 0}">0</h2>
-                                <p class="text-muted mb-0">Sectors Selected</p>
+                                <h2 class="fw-bold text-primary mb-1" th:text="${mostSpecificSectors?.size() ?: 0}">0</h2>
+                                <p class="text-muted mb-0">Specific Sectors Selected</p>
                             </div>
                             <div class="progress mb-3" style="height: 10px;">
                                 <div class="progress-bar bg-primary" role="progressbar"
-                                     th:style="'width: ' + ${(submission.selectedSectors?.size() ?: 0) * 100 / 20} + '%'"
-                                     th:aria-valuenow="${submission.selectedSectors?.size() ?: 0}"
-                                     aria-valuemin="0" aria-valuemax="20"></div>
+                                     th:style="'width: ' + ${(mostSpecificSectors?.size() ?: 0) * 100 / 10} + '%'"
+                                     th:aria-valuenow="${mostSpecificSectors?.size() ?: 0}"
+                                     aria-valuemin="0" aria-valuemax="10"></div>
                             </div>
                             <small class="text-muted">
-                                Progress based on typical sector selection (max 20)
+                                Progress based on typical specific selections (max 10)
                             </small>
                         </div>
                     </div>
@@ -179,44 +199,28 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div th:if="${submission.selectedSectors != null and not submission.selectedSectors.isEmpty()}">
-                            <div th:each="rootSector : ${sectorHierarchy}">
-                                <!-- Root Sector -->
-                                <div th:if="${#lists.contains(submission.selectedSectors, rootSector)}" class="mb-3">
-                                    <span class="sector-item sector-root">
-                                        <i class="fas fa-building me-1"></i>
-                                        <span th:text="${rootSector.name}">Root Sector</span>
+                        <div th:if="${mostSpecificSectors != null and not mostSpecificSectors.isEmpty()}">
+                            <div th:each="sector : ${mostSpecificSectors}" class="mb-3">
+                                <div class="d-flex align-items-center">
+                                    <span class="sector-badge" th:classappend="${sector.level == 0} ? 'sector-level-0' : (${sector.level == 1} ? 'sector-level-1' : 'sector-level-2')">
+                                        <i th:class="${sector.level == 0} ? 'fas fa-building' : (${sector.level == 1} ? 'fas fa-industry' : 'fas fa-cog')" class="me-2"></i>
+                                        <span th:text="${sector.name}">Sector Name</span>
                                     </span>
+                                    <small class="text-muted ms-auto" th:text="'Level ' + ${sector.level}">Level</small>
                                 </div>
-
-                                <!-- Child Sectors -->
-                                <div th:if="${rootSector.children != null and not rootSector.children.isEmpty()}" class="sector-hierarchy">
-                                    <div th:each="childSector : ${rootSector.children}">
-                                        <div th:if="${#lists.contains(submission.selectedSectors, childSector)}" class="mb-2">
-                                            <span class="sector-item sector-child">
-                                                <i class="fas fa-chevron-right me-1"></i>
-                                                <span th:text="${childSector.name}">Child Sector</span>
-                                            </span>
-                                        </div>
-
-                                        <!-- Grandchild Sectors -->
-                                        <div th:if="${childSector.children != null and not childSector.children.isEmpty()}" class="sector-hierarchy">
-                                            <div th:each="grandchildSector : ${childSector.children}">
-                                                <div th:if="${#lists.contains(submission.selectedSectors, grandchildSector)}" class="mb-2">
-                                                    <span class="sector-item sector-grandchild">
-                                                        <i class="fas fa-chevron-right me-1"></i>
-                                                        <span th:text="${grandchildSector.name}">Grandchild Sector</span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <!-- Show hierarchy path for context -->
+                                <div class="sector-path mt-1">
+                                    <small class="text-muted">
+                                        <span th:if="${sector.parent != null and sector.parent.parent != null}" th:text="${sector.parent.parent.name} + ' → '"></span>
+                                        <span th:if="${sector.parent != null}" th:text="${sector.parent.name} + ' → '"></span>
+                                        <strong th:text="${sector.name}"></strong>
+                                    </small>
                                 </div>
                             </div>
                         </div>
 
                         <!-- No Sectors Selected -->
-                        <div th:if="${submission.selectedSectors == null or submission.selectedSectors.isEmpty()}" class="text-center py-4">
+                        <div th:if="${mostSpecificSectors == null or mostSpecificSectors.isEmpty()}" class="text-center py-4">
                             <i class="fas fa-industry fa-3x mb-3 text-muted opacity-50"></i>
                             <h6 class="text-muted">No sectors selected</h6>
                             <p class="text-muted small">This submission doesn't have any sectors selected.</p>
@@ -241,45 +245,7 @@
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="deleteModalLabel">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete this submission?</p>
-                    <p class="text-muted small">This action cannot be undone. You will be redirected to your submissions list.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-2"></i>Cancel
-                    </button>
-                    <form id="deleteForm" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash me-2"></i>Delete
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function confirmDelete() {
-            const deleteButton = document.querySelector('[data-submission-id]');
-            const submissionId = deleteButton.getAttribute('data-submission-id');
-
-            document.getElementById('deleteForm').action = `/user/submission/${submissionId}/delete`;
-
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            modal.show();
-        }
-    </script>
 </body>
 </html>

@@ -54,6 +54,9 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
 
     @Override
     public UserSubmission createSubmission(User user, UserSubmission submission, List<Long> sectorIds) {
+        log.debug("Creating submission for user: {}, submission name: {}, agreeToTerms: {}, sectorIds: {}",
+                 user.getUsername(), submission.getName(), submission.getAgreeToTerms(), sectorIds);
+
         submission.setUser(user);
         submission.setCreatedAt(LocalDateTime.now());
         submission.setUpdatedAt(LocalDateTime.now());
@@ -65,9 +68,17 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
                 sectorRepository.findById(sectorId).ifPresent(sectors::add);
             }
             submission.setSelectedSectors(sectors);
+            log.debug("Found {} sectors for submission", sectors.size());
         }
 
-        return userSubmissionRepository.save(submission);
+        try {
+            UserSubmission saved = userSubmissionRepository.save(submission);
+            log.debug("Successfully saved submission with ID: {}", saved.getId());
+            return saved;
+        } catch (Exception e) {
+            log.error("Error saving submission: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
@@ -125,5 +136,45 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
     @Override
     public long getUserSubmissionsCount(User user) {
         return userSubmissionRepository.countByUser(user);
+    }
+
+    @Override
+    public Set<Sector> getMostSpecificSelectedSectors(UserSubmission submission) {
+        Set<Sector> selectedSectors = submission.getSelectedSectors();
+        if (selectedSectors == null || selectedSectors.isEmpty()) {
+            return new HashSet<>();
+        }
+
+        Set<Sector> mostSpecific = new HashSet<>();
+
+        for (Sector sector : selectedSectors) {
+            boolean hasSelectedChild = false;
+
+            // Check if this sector has any selected children
+            for (Sector potentialChild : selectedSectors) {
+                if (isChildOf(potentialChild, sector)) {
+                    hasSelectedChild = true;
+                    break;
+                }
+            }
+
+            // If this sector has no selected children, it's a most specific selection
+            if (!hasSelectedChild) {
+                mostSpecific.add(sector);
+            }
+        }
+
+        return mostSpecific;
+    }
+
+    private boolean isChildOf(Sector potentialChild, Sector potentialParent) {
+        Sector parent = potentialChild.getParent();
+        while (parent != null) {
+            if (parent.getId().equals(potentialParent.getId())) {
+                return true;
+            }
+            parent = parent.getParent();
+        }
+        return false;
     }
 }
