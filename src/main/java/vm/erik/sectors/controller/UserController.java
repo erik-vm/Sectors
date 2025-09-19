@@ -204,6 +204,11 @@ public class UserController {
 
         User currentUser = userService.getCurrentUser(authentication);
 
+        if (currentPassword.equals(newPassword)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "New password must be different from your current password!");
+            return "redirect:/user/profile";
+        }
+
         try {
             userService.changePassword(currentUser, currentPassword, newPassword);
             redirectAttributes.addFlashAttribute("successMessage", "Password changed successfully!");

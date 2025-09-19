@@ -83,32 +83,43 @@
                         </h5>
                     </div>
                     <div class="card-body p-4">
-                        <form th:action="@{/user/profile}" method="post" th:object="${user}">
+                        <form th:action="@{/user/profile/update}" method="post">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <div class="form-floating">
                                         <input type="text" class="form-control" id="firstName"
-                                               th:field="*{person.firstName}" placeholder="First Name" required>
+                                               name="firstName" th:value="${user.person?.firstName}" placeholder="First Name" required>
                                         <label for="firstName">First Name</label>
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <div class="form-floating">
                                         <input type="text" class="form-control" id="lastName"
-                                               th:field="*{person.lastName}" placeholder="Last Name" required>
+                                               name="lastName" th:value="${user.person?.lastName}" placeholder="Last Name" required>
                                         <label for="lastName">Last Name</label>
                                     </div>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <div class="form-floating">
-                                    <input type="email" class="form-control" id="username"
-                                           th:field="*{username}" placeholder="Email Address" required>
-                                    <label for="username">Email Address</label>
+                                    <input type="text" class="form-control" id="usernameDisplay"
+                                           th:value="${user.username}" placeholder="Username" disabled>
+                                    <label for="usernameDisplay">Username (Login ID)</label>
                                 </div>
                                 <div class="form-text">
                                     <i class="fas fa-info-circle me-1"></i>
-                                    This email address is used for login purposes.
+                                    Your username for logging in. This cannot be changed.
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-floating">
+                                    <input type="email" class="form-control" id="email"
+                                           name="email" th:value="${user.email}" placeholder="Email Address" required>
+                                    <label for="email">Email Address</label>
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Your email address for contact purposes.
                                 </div>
                             </div>
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -209,7 +220,7 @@
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <form th:action="@{/user/change-password}" method="post" id="changePasswordForm">
+                <form th:action="@{/user/profile/password}" method="post" id="changePasswordForm">
                     <div class="modal-body">
                         <div class="mb-3">
                             <div class="form-floating">
@@ -254,8 +265,15 @@
     <script>
         // Password confirmation validation
         document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+            const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (currentPassword === newPassword) {
+                e.preventDefault();
+                alert('New password must be different from your current password.');
+                return false;
+            }
 
             if (newPassword !== confirmPassword) {
                 e.preventDefault();
@@ -263,6 +281,24 @@
                 return false;
             }
         });
+
+        // Real-time password validation
+        function validateNewPassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const newPasswordField = document.getElementById('newPassword');
+
+            if (newPassword && currentPassword === newPassword) {
+                newPasswordField.setCustomValidity('New password must be different from current password');
+                newPasswordField.classList.add('is-invalid');
+            } else {
+                newPasswordField.setCustomValidity('');
+                newPasswordField.classList.remove('is-invalid');
+            }
+        }
+
+        document.getElementById('newPassword').addEventListener('input', validateNewPassword);
+        document.getElementById('currentPassword').addEventListener('input', validateNewPassword);
 
         // Real-time password confirmation feedback
         document.getElementById('confirmPassword').addEventListener('input', function() {
