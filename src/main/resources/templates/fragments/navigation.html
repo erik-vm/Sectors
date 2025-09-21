@@ -19,8 +19,8 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <div class="navbar-nav ms-auto">
                     <!-- Not authenticated - show sign in -->
-                    <a th:if="${userRole == null}" class="nav-link btn btn-primary text-white px-3" th:href="@{/auth}">
-                        Sign In
+                    <a th:if="${userRole == null}" class="nav-link btn btn-primary px-3" th:href="@{/auth}" style="color: white !important;">
+                        <i class="fas fa-sign-in-alt me-1"></i>Sign In
                     </a>
 
                     <!-- Authenticated user navigation -->
@@ -46,8 +46,8 @@
 
                     <form th:if="${userRole != null}" th:action="@{/logout}" method="post" class="d-inline">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                        <button type="submit" class="nav-link btn btn-link text-dark p-0 border-0" data-skip-loading="true" style="background: none;">
-                            Logout
+                        <button type="submit" class="btn btn-outline-danger btn-sm" data-skip-loading="true">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
                         </button>
                     </form>
                 </div>

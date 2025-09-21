@@ -33,10 +33,8 @@ public class AuthController {
                            BindingResult result,
                            Model model,
                            RedirectAttributes redirectAttributes) {
-
         return authService.handleUserRegistration(registerForm, result, model);
     }
-
 
     @GetMapping("/login")
     public String loginPage() {

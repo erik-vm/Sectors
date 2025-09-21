@@ -42,46 +42,34 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     protected void initializeRoles() {
         log.info("Initializing roles...");
-
-
         if (!roleRepository.existsByRoleName(RoleName.USER)) {
             Role userRole = new Role(RoleName.USER, "Standard user with basic access permissions");
             roleRepository.save(userRole);
             log.info("Created USER role");
         }
-
-
         if (!roleRepository.existsByRoleName(RoleName.ADMIN)) {
             Role adminRole = new Role(RoleName.ADMIN, "Administrator with elevated permissions");
             roleRepository.save(adminRole);
             log.info("Created ADMIN role");
         }
-
         log.info("Roles initialization completed. Total roles: {}", roleRepository.count());
     }
 
     @Transactional
     protected void initializeAdminUser() {
         log.info("Initializing admin user...");
-
-
         if (!userRepository.existsUserByUsername("admin")) {
-
             Role adminRole = roleRepository.findByRoleName(RoleName.ADMIN);
             if (adminRole == null) {
                 log.error("ADMIN role not found! Make sure roles are initialized first.");
                 return;
             }
-
-
             Person adminPerson = Person.builder()
                     .firstName("Erik")
                     .lastName("Vainumäe")
                     .build();
             adminPerson = personRepository.save(adminPerson);
             log.info("Created admin person: {} {}", adminPerson.getFirstName(), adminPerson.getLastName());
-
-
             User adminUser = User.builder()
                     .username("admin")
                     .email("admin@erik.vm")
@@ -93,7 +81,6 @@ public class DataInitializer implements CommandLineRunner {
                     .isExpired(false)
                     .credentialsExpired(false)
                     .build();
-
             adminUser = userRepository.save(adminUser);
             log.info("Created admin user: {} with ID: {}", adminUser.getUsername(), adminUser.getId());
         } else {
@@ -104,24 +91,18 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     protected void initializeTestUser() {
         log.info("Initializing test user...");
-
-
         if (!userRepository.existsUserByUsername("testuser")) {
-
             Role userRole = roleRepository.findByRoleName(RoleName.USER);
             if (userRole == null) {
                 log.error("USER role not found! Make sure roles are initialized first.");
                 return;
             }
-
             Person userPerson = Person.builder()
                     .firstName("Test")
                     .lastName("User")
                     .build();
             userPerson = personRepository.save(userPerson);
             log.info("Created regular user person: {} {}", userPerson.getFirstName(), userPerson.getLastName());
-
-
             User testUser = User.builder()
                     .username("testuser")
                     .email("testuser@erik.vm")
@@ -133,7 +114,6 @@ public class DataInitializer implements CommandLineRunner {
                     .isExpired(false)
                     .credentialsExpired(false)
                     .build();
-
             testUser = userRepository.save(testUser);
             log.info("Created regular user: {} with ID: {}", testUser.getUsername(), testUser.getId());
         } else {

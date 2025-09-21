@@ -23,7 +23,6 @@ public class AdminController {
     public AdminController(AdminService adminService, UserService userService, SectorService sectorService) {
         this.adminService = adminService;
         this.userService = userService;
-
         this.sectorService = sectorService;
     }
 
@@ -73,7 +72,6 @@ public class AdminController {
                                @RequestParam(required = false) Long parentId,
                                Model model,
                                RedirectAttributes redirectAttributes) {
-
         return sectorService.handleSectorCreation(sector, result, parentId, model);
     }
 
@@ -90,7 +88,6 @@ public class AdminController {
                                @RequestParam(required = false) Long parentId,
                                Model model,
                                RedirectAttributes redirectAttributes) {
-
         return sectorService.handleSectorUpdate(id, sector, result, parentId, model);
     }
 
@@ -122,7 +119,6 @@ public class AdminController {
                                 @RequestParam String email,
                                 Authentication authentication,
                                 RedirectAttributes redirectAttributes) {
-
         return adminService.handleUpdateProfile(firstName, lastName, email, authentication, redirectAttributes);
     }
 
@@ -132,7 +128,6 @@ public class AdminController {
                                  @RequestParam String confirmPassword,
                                  Authentication authentication,
                                  RedirectAttributes redirectAttributes) {
-
         return adminService.handleChangePassword(currentPassword, newPassword, confirmPassword, authentication, redirectAttributes);
     }
 }

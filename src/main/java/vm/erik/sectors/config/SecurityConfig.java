@@ -23,41 +23,26 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
 
     @Bean
     public SessionRegistry sessionRegistry() {
         return new SessionRegistryImpl();
     }
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http.authorizeHttpRequests(authz -> authz
-                        // Public resources
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
-
-                        // Authentication endpoints
                         .requestMatchers("/auth/**").permitAll()
-
-                        // Public pages
                         .requestMatchers("/", "/error").permitAll()
-
-                        // Role-based access for different endpoints
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**", "/sectors/**", "/profile/**").hasAnyRole("USER", "ADMIN")
-
-                        // All other requests require authentication
                         .anyRequest().authenticated()
                 )
-
-                // Form-based authentication
                 .formLogin(form -> form
                         .loginPage("/auth")
                         .loginProcessingUrl("/login")
@@ -67,8 +52,6 @@ public class SecurityConfig {
                         .passwordParameter("password")
                         .permitAll()
                 )
-
-                // Logout configuration
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/auth?logout=true")
@@ -76,22 +59,14 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
-
-                // Session management
                 .sessionManagement(session -> session
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false)
                         .sessionRegistry(sessionRegistry())
                 )
-
-                // Exception handling
                 .exceptionHandling(ex -> ex
                         .accessDeniedPage("/access-denied")
                 );
-
-
         return http.build();
     }
-
-
 }

@@ -45,7 +45,6 @@ public class UserController {
                                    @RequestParam(required = false) List<Long> selectedSectors,
                                    Authentication authentication,
                                    Model model) {
-
         userService.addUserRoleToModel(model, authentication);
         return userSubmissionService.handleSubmissionCreation(submission, result, selectedSectors, authentication, model);
     }
