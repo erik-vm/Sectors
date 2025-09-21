@@ -127,6 +127,17 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
 
+                            <!-- Structured Validation Errors -->
+                            <div th:if="${validationErrors != null and validationErrors.hasErrors()}" class="alert alert-danger alert-dismissible fade show">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <strong>Please fix the following errors:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li th:each="error : ${validationErrors.errors}" th:text="${error.message}">Error message</li>
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+
+
                             <form th:action="@{/auth/register}" method="post" th:object="${userRegistration}">
                                 <div class="row">
                                     <div class="col-md-6">
@@ -197,28 +208,30 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Check URL parameters to determine which tab to show
-        const urlParams = new URLSearchParams(window.location.search);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check URL parameters to determine which tab to show
+            const urlParams = new URLSearchParams(window.location.search);
 
-        // Auto-switch to register tab if URL has tab=register parameter
-        if (urlParams.get('tab') === 'register') {
-            const registerTab = new bootstrap.Tab(document.getElementById('register-tab'));
-            registerTab.show();
-        }
+            // Check for registration-specific validation errors
+            const registerTabDiv = document.getElementById('register');
+            const hasRegistrationErrors = registerTabDiv && registerTabDiv.querySelector('.alert-danger') !== null;
 
-        // Auto-switch to register tab if there's a registration error
-        if (document.querySelector('[th\\:if="${registrationError}"]')) {
-            const registerTab = new bootstrap.Tab(document.getElementById('register-tab'));
-            registerTab.show();
-        }
+            console.log('DOM loaded - hasRegistrationErrors:', hasRegistrationErrors);
 
-        // Auto-switch to sign in tab if registration was successful
-        if (urlParams.has('registered')) {
-            setTimeout(() => {
-                const signinTab = new bootstrap.Tab(document.getElementById('signin-tab'));
-                signinTab.show();
-            }, 3000); // Switch to sign in after 3 seconds
-        }
+            // Auto-switch to register tab if there are registration validation errors or tab parameter
+            if (urlParams.get('tab') === 'register' || hasRegistrationErrors) {
+                console.log('Switching to register tab');
+                const registerTab = new bootstrap.Tab(document.getElementById('register-tab'));
+                registerTab.show();
+            }
+            // Auto-switch to sign in tab if registration was successful
+            if (urlParams.has('registered')) {
+                setTimeout(() => {
+                    const signinTab = new bootstrap.Tab(document.getElementById('signin-tab'));
+                    signinTab.show();
+                }, 3000); // Switch to sign in after 3 seconds
+            }
+        });
     </script>
 </body>
 </html>

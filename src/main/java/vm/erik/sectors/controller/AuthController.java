@@ -44,28 +44,10 @@ public class AuthController {
     @PostMapping("/register")
     public String register(@Valid @ModelAttribute("userRegistration") RegisterForm registerForm,
                            BindingResult result,
+                           Model model,
                            RedirectAttributes redirectAttributes) {
 
-        if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("userRegistration", registerForm);
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.userRegistration", result);
-            return "redirect:/auth";
-        }
-
-        if (!registerForm.getPassword().equals(registerForm.getConfirmPassword())) {
-            redirectAttributes.addFlashAttribute("userRegistration", registerForm);
-            redirectAttributes.addFlashAttribute("registrationError", "Passwords do not match");
-            return "redirect:/auth";
-        }
-
-        try {
-            authService.registerUser(registerForm);
-            return "redirect:/auth?registered";
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("userRegistration", registerForm);
-            redirectAttributes.addFlashAttribute("registrationError", e.getMessage());
-            return "redirect:/auth";
-        }
+        return authService.handleUserRegistration(registerForm, result, model);
     }
 
 

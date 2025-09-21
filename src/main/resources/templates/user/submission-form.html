@@ -100,6 +100,16 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
 
+        <!-- Structured Validation Errors -->
+        <div th:if="${validationErrors != null and validationErrors.hasErrors()}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong>Please fix the following errors:</strong>
+            <ul class="mb-0 mt-2">
+                <li th:each="error : ${validationErrors.errors}" th:text="${error.message}">Error message</li>
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
         <!-- Submission Form -->
         <div class="row justify-content-center">
             <div class="col-lg-10">
@@ -117,7 +127,7 @@
                                     <i class="fas fa-user me-2"></i>Name
                                 </label>
                                 <input type="text" class="form-control" id="name" th:field="*{name}"
-                                       placeholder="Enter your name" required>
+                                       placeholder="Submission name" required>
                                 <div class="form-text">This will be displayed as the submitter of this form.</div>
                             </div>
 

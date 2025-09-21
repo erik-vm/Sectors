@@ -2,17 +2,22 @@ package vm.erik.sectors.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import vm.erik.sectors.model.Sector;
 import vm.erik.sectors.model.User;
 import vm.erik.sectors.model.UserSubmission;
 import vm.erik.sectors.repository.SectorRepository;
 import vm.erik.sectors.repository.UserRepository;
 import vm.erik.sectors.repository.UserSubmissionRepository;
+import vm.erik.sectors.service.SectorService;
+import vm.erik.sectors.service.UserService;
 import vm.erik.sectors.service.UserSubmissionService;
+import vm.erik.sectors.validation.ValidationService;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -20,7 +25,6 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class UserSubmissionServiceImpl implements UserSubmissionService {
@@ -28,6 +32,21 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
     private final UserSubmissionRepository userSubmissionRepository;
     private final SectorRepository sectorRepository;
     private final UserRepository userRepository;
+    private final ValidationService validationService;
+    private final UserService userService;
+    private final SectorService sectorService;
+
+    public UserSubmissionServiceImpl(UserSubmissionRepository userSubmissionRepository,
+                                   SectorRepository sectorRepository, UserRepository userRepository,
+                                   ValidationService validationService, UserService userService,
+                                   SectorService sectorService) {
+        this.userSubmissionRepository = userSubmissionRepository;
+        this.sectorRepository = sectorRepository;
+        this.userRepository = userRepository;
+        this.validationService = validationService;
+        this.userService = userService;
+        this.sectorService = sectorService;
+    }
 
     @Override
     public List<UserSubmission> getUserSubmissions(User user) {
@@ -207,7 +226,35 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
 
         submission.setIsActive(true);
         userSubmissionRepository.save(submission);
+    }
 
+    @Override
+    public String handleSubmissionCreation(UserSubmission submission, BindingResult result,
+                                         List<Long> selectedSectors, Authentication authentication, Model model) {
+        User currentUser = userService.getCurrentUser(authentication);
 
+        if (validationService.handleValidationErrors(result, model, submission, "submission")) {
+            model.addAttribute("user", currentUser);
+            model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
+            return "user/submission-form";
+        }
+
+        createSubmission(currentUser, submission, selectedSectors);
+        return "redirect:/user/submissions";
+    }
+
+    @Override
+    public String handleSubmissionUpdate(Long id, UserSubmission submission, BindingResult result,
+                                       List<Long> selectedSectors, Authentication authentication, Model model) {
+        User currentUser = userService.getCurrentUser(authentication);
+
+        if (validationService.handleValidationErrors(result, model, submission, "submission")) {
+            model.addAttribute("user", currentUser);
+            model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
+            return "user/submission-form";
+        }
+
+        updateSubmission(currentUser, id, submission, selectedSectors);
+        return "redirect:/user/submission/" + id;
     }
 }

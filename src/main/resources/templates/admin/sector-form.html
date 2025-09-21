@@ -80,6 +80,16 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
 
+        <!-- Structured Validation Errors -->
+        <div th:if="${validationErrors != null and validationErrors.hasErrors()}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong>Please fix the following errors:</strong>
+            <ul class="mb-0 mt-2">
+                <li th:each="error : ${validationErrors.errors}" th:text="${error.message}">Error message</li>
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
         <!-- Form -->
         <div class="row justify-content-center">
             <div class="col-md-8">

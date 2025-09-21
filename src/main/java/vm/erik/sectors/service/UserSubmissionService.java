@@ -1,5 +1,8 @@
 package vm.erik.sectors.service;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import vm.erik.sectors.model.Sector;
 import vm.erik.sectors.model.User;
 import vm.erik.sectors.model.UserSubmission;
@@ -38,4 +41,16 @@ public interface UserSubmissionService {
      * that have selected children
      */
     Set<Sector> getMostSpecificSelectedSectors(UserSubmission submission);
+
+    /**
+     * Handles submission creation with validation - returns view name to render
+     */
+    String handleSubmissionCreation(UserSubmission submission, BindingResult result,
+                                   List<Long> selectedSectors, Authentication authentication, Model model);
+
+    /**
+     * Handles submission update with validation - returns view name to render
+     */
+    String handleSubmissionUpdate(Long id, UserSubmission submission, BindingResult result,
+                                 List<Long> selectedSectors, Authentication authentication, Model model);
 }

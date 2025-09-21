@@ -3,6 +3,8 @@ package vm.erik.sectors.service.impl;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import vm.erik.sectors.dto.RegisterForm;
 import vm.erik.sectors.enums.RoleName;
 import vm.erik.sectors.model.Person;
@@ -12,6 +14,7 @@ import vm.erik.sectors.repository.PersonRepository;
 import vm.erik.sectors.repository.RoleRepository;
 import vm.erik.sectors.repository.UserRepository;
 import vm.erik.sectors.service.AuthService;
+import vm.erik.sectors.validation.ValidationService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -24,24 +27,22 @@ public class AuthServiceImpl implements AuthService {
     private final PersonRepository personRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ValidationService validationService;
 
     public AuthServiceImpl(UserRepository userRepository, PersonRepository personRepository,
-                           RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+                           RoleRepository roleRepository, PasswordEncoder passwordEncoder,
+                           ValidationService validationService) {
         this.userRepository = userRepository;
         this.personRepository = personRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.validationService = validationService;
     }
 
 
     @Override
     public void registerUser(RegisterForm registerForm) {
-        if (isUsernameTaken(registerForm.getUsername())) {
-            throw new RuntimeException("Username already exists");
-        }
-        if (isEmailTaken(registerForm.getEmail())) {
-            throw new RuntimeException("Email already exists");
-        }
+        // Validation is handled by annotations and ValidationService
 
         Person person = Person.builder()
                 .firstName(registerForm.getFirstName())
@@ -77,5 +78,15 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean isEmailTaken(String email) {
         return userRepository.existsUserByEmail((email));
+    }
+
+    @Override
+    public String handleUserRegistration(RegisterForm registerForm, BindingResult result, Model model) {
+        if (validationService.handleRegistrationValidationErrors(result, model, registerForm)) {
+            return "auth/auth";
+        }
+
+        registerUser(registerForm);
+        return "redirect:/auth?registered";
     }
 }

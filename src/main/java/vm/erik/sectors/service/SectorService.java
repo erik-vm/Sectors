@@ -1,5 +1,7 @@
 package vm.erik.sectors.service;
 
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import vm.erik.sectors.model.Sector;
 
 import java.util.List;
@@ -24,4 +26,13 @@ public interface SectorService {
 
     List<Sector> getActiveSectorsHierarchy();
 
+    /**
+     * Handles sector creation with validation - returns view name to render
+     */
+    String handleSectorCreation(Sector sector, BindingResult result, Long parentId, Model model);
+
+    /**
+     * Handles sector update with validation - returns view name to render
+     */
+    String handleSectorUpdate(Long id, Sector sector, BindingResult result, Long parentId, Model model);
 }

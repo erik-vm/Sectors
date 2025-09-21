@@ -3,18 +3,26 @@ package vm.erik.sectors.service.impl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import vm.erik.sectors.model.Sector;
 import vm.erik.sectors.repository.SectorRepository;
 import vm.erik.sectors.service.SectorService;
+import vm.erik.sectors.validation.ValidationService;
 
 import java.util.List;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class SectorServiceImpl implements SectorService {
 
     private final SectorRepository sectorRepository;
+    private final ValidationService validationService;
+
+    public SectorServiceImpl(SectorRepository sectorRepository, ValidationService validationService) {
+        this.sectorRepository = sectorRepository;
+        this.validationService = validationService;
+    }
 
     @Override
     public List<Sector> getAllSectorsHierarchy() {
@@ -77,5 +85,75 @@ public class SectorServiceImpl implements SectorService {
     @Override
     public List<Sector> getActiveSectorsHierarchy() {
         return sectorRepository.findByParentIsNullAndIsActiveTrueOrderByName();
+    }
+
+    @Override
+    public String handleSectorCreation(Sector sector, BindingResult result, Long parentId, Model model) {
+        // Preserve parent information
+        if (parentId != null) {
+            Sector parent = getSectorById(parentId);
+            if (parent != null) {
+                sector.setParent(parent);
+                sector.setLevel(parent.getLevel() + 1);
+            }
+        }
+
+        if (validationService.handleValidationErrors(result, model, sector, "sector")) {
+            model.addAttribute("parentSectors", getActiveSectorsByMaxLevel(1));
+            return "admin/sector-form";
+        }
+
+        if (parentId != null) {
+            Sector parent = getSectorById(parentId);
+            if (parent != null && parent.getLevel() < 2) {
+                sector.setParent(parent);
+                sector.setLevel(parent.getLevel() + 1);
+            } else {
+                validationService.addCustomErrorToModel(model, "Invalid parent sector or maximum depth reached");
+                model.addAttribute("parentSectors", getActiveSectorsByMaxLevel(1));
+                return "admin/sector-form";
+            }
+        } else {
+            sector.setLevel(0);
+            sector.setParent(null);
+        }
+
+        sector.setIsActive(true);
+        saveSector(sector);
+        return "redirect:/admin/sectors";
+    }
+
+    @Override
+    public String handleSectorUpdate(Long id, Sector sector, BindingResult result, Long parentId, Model model) {
+        if (validationService.handleValidationErrors(result, model, sector, "sector")) {
+            model.addAttribute("parentSectors", getActiveSectorsByMaxLevel(1));
+            return "admin/sector-form";
+        }
+
+        Sector existingSector = getSectorById(id);
+        if (existingSector == null) {
+            validationService.addCustomErrorToModel(model, "Sector not found");
+            return "redirect:/admin/sectors";
+        }
+
+        // Update basic fields
+        existingSector.setName(sector.getName());
+        existingSector.setDescription(sector.getDescription());
+        existingSector.setSortOrder(sector.getSortOrder());
+
+        // Handle parent changes carefully
+        if (parentId != null && (existingSector.getParent() == null || !parentId.equals(existingSector.getParent().getId()))) {
+            Sector newParent = getSectorById(parentId);
+            if (newParent != null && newParent.getLevel() < 2) {
+                existingSector.setParent(newParent);
+                existingSector.setLevel(newParent.getLevel() + 1);
+            }
+        } else if (parentId == null && existingSector.getParent() != null) {
+            existingSector.setParent(null);
+            existingSector.setLevel(0);
+        }
+
+        saveSector(existingSector);
+        return "redirect:/admin/sectors";
     }
 }

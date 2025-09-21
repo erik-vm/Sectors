@@ -19,20 +19,10 @@ public class UserDetailsDto {
     private LocalDateTime updatedAt;
     private LocalDateTime lastLogin;
 
-    // Person details
     private String firstName;
     private String lastName;
 
-
     private List<SubmissionSummaryDto> submissions;
-
-    // Convenience methods for templates
-    public String getFullName() {
-        if (firstName != null && lastName != null) {
-            return firstName + " " + lastName;
-        }
-        return username;
-    }
 
 
 }

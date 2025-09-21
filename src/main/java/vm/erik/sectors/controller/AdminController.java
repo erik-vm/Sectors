@@ -27,7 +27,7 @@ public class AdminController {
     private final SectorService sectorService;
 
     public AdminController(AdminService adminService, UserService userService,
-                          UserSubmissionService userSubmissionService, SectorService sectorService) {
+                           UserSubmissionService userSubmissionService, SectorService sectorService) {
         this.adminService = adminService;
         this.userService = userService;
         this.userSubmissionService = userSubmissionService;
@@ -46,8 +46,8 @@ public class AdminController {
         // Get all users except current admin
         var allUsers = adminService.getAllUsers();
         var users = allUsers.stream()
-            .filter(user -> !user.getUsername().equals(currentAdmin.getUsername()))
-            .toList();
+                .filter(user -> !user.getUsername().equals(currentAdmin.getUsername()))
+                .toList();
         model.addAttribute("users", users);
 
         return "admin/dashboard";
@@ -135,47 +135,12 @@ public class AdminController {
 
     @PostMapping("/sector/new")
     public String createSector(@Valid @ModelAttribute Sector sector,
-                              BindingResult result,
-                              @RequestParam(required = false) Long parentId,
-                              Model model,
-                              RedirectAttributes redirectAttributes) {
+                               BindingResult result,
+                               @RequestParam(required = false) Long parentId,
+                               Model model,
+                               RedirectAttributes redirectAttributes) {
 
-        if (result.hasErrors()) {
-            // Preserve parent information when redisplaying form after validation errors
-            if (parentId != null) {
-                Sector parent = sectorService.getSectorById(parentId);
-                if (parent != null) {
-                    sector.setParent(parent);
-                    sector.setLevel(parent.getLevel() + 1);
-                }
-            }
-            model.addAttribute("parentSectors", sectorService.getActiveSectorsByMaxLevel(1));
-            return "admin/sector-form";
-        }
-
-        try {
-            if (parentId != null) {
-                Sector parent = sectorService.getSectorById(parentId);
-                if (parent != null && parent.getLevel() < 2) {
-                    sector.setParent(parent);
-                    sector.setLevel(parent.getLevel() + 1);
-                } else {
-                    throw new IllegalArgumentException("Invalid parent sector or maximum depth reached");
-                }
-            } else {
-                sector.setLevel(0);
-                sector.setParent(null);
-            }
-
-            sector.setIsActive(true);
-            sectorService.saveSector(sector);
-            redirectAttributes.addFlashAttribute("successMessage", "Sector created successfully!");
-            return "redirect:/admin/sectors";
-        } catch (Exception e) {
-            model.addAttribute("parentSectors", sectorService.getActiveSectorsByMaxLevel(1));
-            model.addAttribute("errorMessage", "Error creating sector: " + e.getMessage());
-            return "admin/sector-form";
-        }
+        return sectorService.handleSectorCreation(sector, result, parentId, model);
     }
 
     @GetMapping("/sector/{id}/edit")
@@ -192,49 +157,13 @@ public class AdminController {
 
     @PostMapping("/sector/{id}/edit")
     public String updateSector(@PathVariable Long id,
-                              @Valid @ModelAttribute Sector sector,
-                              BindingResult result,
-                              @RequestParam(required = false) Long parentId,
-                              Model model,
-                              RedirectAttributes redirectAttributes) {
+                               @Valid @ModelAttribute Sector sector,
+                               BindingResult result,
+                               @RequestParam(required = false) Long parentId,
+                               Model model,
+                               RedirectAttributes redirectAttributes) {
 
-        if (result.hasErrors()) {
-            model.addAttribute("parentSectors", sectorService.getActiveSectorsByMaxLevel(1));
-            return "admin/sector-form";
-        }
-
-        try {
-            Sector existingSector = sectorService.getSectorById(id);
-            if (existingSector == null) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Sector not found");
-                return "redirect:/admin/sectors";
-            }
-
-            // Update basic fields
-            existingSector.setName(sector.getName());
-            existingSector.setDescription(sector.getDescription());
-            existingSector.setSortOrder(sector.getSortOrder());
-
-            // Handle parent changes carefully
-            if (parentId != null && !parentId.equals(existingSector.getParent().getId())) {
-                Sector newParent = sectorService.getSectorById(parentId);
-                if (newParent != null && newParent.getLevel() < 2) {
-                    existingSector.setParent(newParent);
-                    existingSector.setLevel(newParent.getLevel() + 1);
-                }
-            } else if (parentId == null && existingSector.getParent() != null) {
-                existingSector.setParent(null);
-                existingSector.setLevel(0);
-            }
-
-            sectorService.saveSector(existingSector);
-            redirectAttributes.addFlashAttribute("successMessage", "Sector updated successfully!");
-            return "redirect:/admin/sectors";
-        } catch (Exception e) {
-            model.addAttribute("parentSectors", sectorService.getActiveSectorsByMaxLevel(1));
-            model.addAttribute("errorMessage", "Error updating sector: " + e.getMessage());
-            return "admin/sector-form";
-        }
+        return sectorService.handleSectorUpdate(id, sector, result, parentId, model);
     }
 
     @PostMapping("/sector/{id}/deactivate")

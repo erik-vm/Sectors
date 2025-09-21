@@ -52,7 +52,6 @@ public class UserController {
     public String newSubmissionForm(Model model, Authentication authentication) {
         User currentUser = userService.getCurrentUser(authentication);
         UserSubmission submission = new UserSubmission();
-        submission.setName(currentUser.getPerson().getFirstName() + " " + currentUser.getPerson().getLastName());
 
         model.addAttribute("user", currentUser);
         model.addAttribute("submission", submission);
@@ -62,44 +61,14 @@ public class UserController {
     }
 
     @PostMapping("/submission/new")
-    public String createSubmission(@ModelAttribute UserSubmission submission,
+    public String createSubmission(@Valid @ModelAttribute UserSubmission submission,
                                    BindingResult result,
                                    @RequestParam(required = false) List<Long> selectedSectors,
                                    Authentication authentication,
                                    Model model,
                                    RedirectAttributes redirectAttributes) {
 
-        User currentUser = userService.getCurrentUser(authentication);
-
-
-        // Manual validation
-        if (submission.getName() == null || submission.getName().trim().isEmpty()) {
-            model.addAttribute("user", currentUser);
-            model.addAttribute("submission", submission);
-            model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
-            model.addAttribute("errorMessage", "Name is required");
-            return "user/submission-form";
-        }
-
-        if (submission.getAgreeToTerms() == null || !submission.getAgreeToTerms()) {
-            model.addAttribute("user", currentUser);
-            model.addAttribute("submission", submission);
-            model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
-            model.addAttribute("errorMessage", "You must agree to the terms and conditions");
-            return "user/submission-form";
-        }
-
-        try {
-            userSubmissionService.createSubmission(currentUser, submission, selectedSectors);
-            redirectAttributes.addFlashAttribute("successMessage", "Submission created successfully!");
-            return "redirect:/user/submissions";
-        } catch (Exception e) {
-            model.addAttribute("user", currentUser);
-            model.addAttribute("submission", submission);
-            model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
-            model.addAttribute("errorMessage", "Error creating submission: " + e.getMessage());
-            return "user/submission-form";
-        }
+        return userSubmissionService.handleSubmissionCreation(submission, result, selectedSectors, authentication, model);
     }
 
     @GetMapping("/submission/{id}")
@@ -144,22 +113,7 @@ public class UserController {
                                    Model model,
                                    RedirectAttributes redirectAttributes) {
 
-        User currentUser = userService.getCurrentUser(authentication);
-
-        if (result.hasErrors()) {
-            model.addAttribute("user", currentUser);
-            model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
-            return "user/submission-form";
-        }
-
-        try {
-            userSubmissionService.updateSubmission(currentUser, id, submission, selectedSectors);
-            redirectAttributes.addFlashAttribute("successMessage", "Submission updated successfully!");
-            return "redirect:/user/submission/" + id;
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error updating submission: " + e.getMessage());
-            return "redirect:/user/submission/" + id + "/edit";
-        }
+        return userSubmissionService.handleSubmissionUpdate(id, submission, result, selectedSectors, authentication, model);
     }
 
     @GetMapping("/profile")
