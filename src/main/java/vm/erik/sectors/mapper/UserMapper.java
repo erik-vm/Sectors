@@ -60,20 +60,4 @@ public class UserMapper {
                 .build();
     }
 
-    public User toUser (UserDetailsDto userDetailsDto){
-        User user = User.builder()
-                .username(userDetailsDto.getUsername())
-                .email(userDetailsDto.getEmail())
-                .isLocked(userDetailsDto.isLocked())
-                .isActive(userDetailsDto.isActive())
-                .lastLogin(userDetailsDto.getLastLogin())
-                .build();
-
-        user.getPerson().setFirstName(userDetailsDto.getFirstName());
-        user.getPerson().setLastName(userDetailsDto.getLastName());
-        user.setCreatedAt(userDetailsDto.getCreatedAt());
-        user.setUpdatedAt(userDetailsDto.getUpdatedAt());
-
-        return user;
-    }
 }

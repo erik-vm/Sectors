@@ -141,6 +141,14 @@ public class AdminController {
                               RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
+            // Preserve parent information when redisplaying form after validation errors
+            if (parentId != null) {
+                Sector parent = sectorService.getSectorById(parentId);
+                if (parent != null) {
+                    sector.setParent(parent);
+                    sector.setLevel(parent.getLevel() + 1);
+                }
+            }
             model.addAttribute("parentSectors", sectorService.getActiveSectorsByMaxLevel(1));
             return "admin/sector-form";
         }

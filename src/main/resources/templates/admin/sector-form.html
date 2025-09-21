@@ -93,6 +93,9 @@
                         <form th:action="${sector.id != null ? '/admin/sector/' + sector.id + '/edit' : '/admin/sector/new'}"
                               th:object="${sector}" method="post">
 
+                            <!-- Hidden parent ID field when parent is pre-selected -->
+                            <input type="hidden" name="parentId" th:if="${sector.parent != null}" th:value="${sector.parent.id}">
+
                             <!-- Level and Parent Information -->
                             <div class="row mb-4">
                                 <div class="col-md-6">
@@ -165,9 +168,9 @@
                                            placeholder="0">
                                     <div class="form-text">Lower numbers appear first in lists. Leave empty for default ordering.</div>
                                 </div>
-                                <div class="col-md-6" th:if="${sector.id == null and sector.level < 2}">
+                                <div class="col-md-6" th:if="${sector.id == null}">
                                     <label for="parentId" class="form-label fw-bold">Parent Sector</label>
-                                    <select class="form-select" id="parentId" name="parentId">
+                                    <select class="form-select" id="parentId" name="parentId" th:disabled="${sector.parent != null}">
                                         <option value="">-- Select Parent (Optional for Root Level) --</option>
                                         <option th:each="parent : ${parentSectors}"
                                                 th:value="${parent.id}"
@@ -177,8 +180,8 @@
                                         </option>
                                     </select>
                                     <div class="form-text">
-                                        Select a parent sector to create this as a child sector.
-                                        Leave empty to create a root-level sector.
+                                        <span th:if="${sector.parent != null}">Parent is pre-selected based on your navigation.</span>
+                                        <span th:if="${sector.parent == null}">Select a parent sector to create this as a child sector. Leave empty to create a root-level sector.</span>
                                     </div>
                                 </div>
                             </div>
