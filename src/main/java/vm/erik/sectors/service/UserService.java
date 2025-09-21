@@ -23,4 +23,9 @@ public interface UserService {
     String handleChangePassword(String currentPassword, String newPassword, String confirmPassword, Authentication authentication);
 
     String handleViewSettings(Model model, Authentication authentication);
+
+    /**
+     * Add user role to model based on authentication
+     */
+    void addUserRoleToModel(Model model, Authentication authentication);
 }

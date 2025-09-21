@@ -5,26 +5,20 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import vm.erik.sectors.handler.HomeHandler;
 
 @Controller
 @RequestMapping("/")
 public class HomeController {
 
-    @GetMapping()
-    public String home(Authentication authentication, Model model) {
-        // Redirect to appropriate dashboard based on authentication
-        if (authentication != null && authentication.isAuthenticated()) {
-            if (authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-                return "redirect:/admin";
-            } else {
-                return "redirect:/user";
-            }
-        }
+    private final HomeHandler homeHandler;
 
-        // For unauthenticated users, ensure userRole is null
-        model.addAttribute("userRole", null);
-        return "home/index";
+    public HomeController(HomeHandler homeHandler) {
+        this.homeHandler = homeHandler;
     }
 
+    @GetMapping()
+    public String home(Authentication authentication, Model model) {
+        return homeHandler.handleHome(authentication, model);
+    }
 }

@@ -15,6 +15,7 @@ import vm.erik.sectors.repository.PersonRepository;
 import vm.erik.sectors.repository.UserRepository;
 import vm.erik.sectors.repository.UserSubmissionRepository;
 import vm.erik.sectors.service.UserService;
+import vm.erik.sectors.handler.UserHandler;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,13 +29,16 @@ public class UserServiceImpl implements UserService {
     private final PersonRepository personRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserSubmissionRepository userSubmissionRepository;
+    private final UserHandler userHandler;
 
     public UserServiceImpl(UserRepository userRepository, PersonRepository personRepository,
-                          PasswordEncoder passwordEncoder, UserSubmissionRepository userSubmissionRepository) {
+                          PasswordEncoder passwordEncoder, UserSubmissionRepository userSubmissionRepository,
+                          UserHandler userHandler) {
         this.userRepository = userRepository;
         this.personRepository = personRepository;
         this.passwordEncoder = passwordEncoder;
         this.userSubmissionRepository = userSubmissionRepository;
+        this.userHandler = userHandler;
     }
 
     @Override
@@ -84,72 +88,40 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String handleUserDashboard(Model model, Authentication authentication) {
-        User currentUser = getCurrentUser(authentication);
-        if (currentUser == null) {
-            throw new UserNotFoundException("User not found");
-        }
-
-        List<UserSubmission> recentSubmissions = userSubmissionRepository.findByUserOrderByCreatedAtDesc(currentUser, PageRequest.of(0, 5));
-
-        model.addAttribute("user", currentUser);
-        model.addAttribute("recentSubmissions", recentSubmissions);
-        model.addAttribute("totalSubmissions", userSubmissionRepository.countByUser(currentUser));
-
-        return "user/dashboard";
+        return userHandler.handleUserDashboard(model, authentication);
     }
 
     @Override
     public String handleViewProfile(Model model, Authentication authentication) {
-        User currentUser = getCurrentUser(authentication);
-        if (currentUser == null) {
-            throw new UserNotFoundException("User not found");
-        }
-
-        model.addAttribute("user", currentUser);
-        return "user/profile";
+        return userHandler.handleViewProfile(model, authentication);
     }
 
     @Override
-    public String handleUpdateProfile(String firstName, String lastName, String email,
-                                    Authentication authentication) {
-        User currentUser = getCurrentUser(authentication);
-        if (currentUser == null) {
-            throw new UserNotFoundException("User not found");
-        }
-
-        updateUserProfile(currentUser, firstName, lastName, email);
-        return "redirect:/user/profile?success=profile-updated";
+    public String handleUpdateProfile(String firstName, String lastName, String email, Authentication authentication) {
+        return userHandler.handleUpdateProfile(firstName, lastName, email, authentication);
     }
 
     @Override
-    public String handleChangePassword(String currentPassword, String newPassword, String confirmPassword,
-                                     Authentication authentication) {
-        User currentUser = getCurrentUser(authentication);
-        if (currentUser == null) {
-            throw new UserNotFoundException("User not found");
-        }
-
-        validatePasswordChange(currentPassword, newPassword, confirmPassword, currentUser);
-        changePassword(currentUser, currentPassword, newPassword);
-        return "redirect:/user/profile?success=password-changed";
-    }
-
-    private void validatePasswordChange(String currentPassword, String newPassword, String confirmPassword, User user) {
-        if (!newPassword.equals(confirmPassword)) {
-            throw new PasswordValidationException("New passwords do not match!");
-        }
-
-        if (currentPassword.equals(newPassword)) {
-            throw new PasswordValidationException("New password must be different from your current password!");
-        }
-
-        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new PasswordValidationException("Current password is incorrect!");
-        }
+    public String handleChangePassword(String currentPassword, String newPassword, String confirmPassword, Authentication authentication) {
+        return userHandler.handleChangePassword(currentPassword, newPassword, confirmPassword, authentication);
     }
 
     @Override
     public String handleViewSettings(Model model, Authentication authentication) {
-        return handleViewProfile(model, authentication);
+        return userHandler.handleViewSettings(model, authentication);
+    }
+
+    @Override
+    public void addUserRoleToModel(Model model, Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            if (authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                model.addAttribute("userRole", "ADMIN");
+            } else {
+                model.addAttribute("userRole", "USER");
+            }
+        } else {
+            model.addAttribute("userRole", null);
+        }
     }
 }

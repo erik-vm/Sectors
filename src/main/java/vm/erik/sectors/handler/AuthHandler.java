@@ -1,9 +1,8 @@
-package vm.erik.sectors.service.impl;
+package vm.erik.sectors.handler;
 
-import jakarta.transaction.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import vm.erik.sectors.dto.RegisterForm;
@@ -14,40 +13,31 @@ import vm.erik.sectors.model.User;
 import vm.erik.sectors.repository.PersonRepository;
 import vm.erik.sectors.repository.RoleRepository;
 import vm.erik.sectors.repository.UserRepository;
-import vm.erik.sectors.service.AuthService;
-import vm.erik.sectors.handler.AuthHandler;
 import vm.erik.sectors.validation.ValidationService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 
-@Service
-@Transactional
-public class AuthServiceImpl implements AuthService {
+@Component
+public class AuthHandler {
 
     private final UserRepository userRepository;
     private final PersonRepository personRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final ValidationService validationService;
-    private final AuthHandler authHandler;
 
-    public AuthServiceImpl(UserRepository userRepository, PersonRepository personRepository,
-                           RoleRepository roleRepository, PasswordEncoder passwordEncoder,
-                           ValidationService validationService, AuthHandler authHandler) {
+    public AuthHandler(UserRepository userRepository, PersonRepository personRepository,
+                      RoleRepository roleRepository, PasswordEncoder passwordEncoder,
+                      ValidationService validationService) {
         this.userRepository = userRepository;
         this.personRepository = personRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.validationService = validationService;
-        this.authHandler = authHandler;
     }
 
-
-    @Override
-    public void registerUser(RegisterForm registerForm) {
-        // Validation is handled by annotations and ValidationService
-
+    private void registerUser(RegisterForm registerForm) {
         Person person = Person.builder()
                 .firstName(registerForm.getFirstName())
                 .lastName(registerForm.getLastName())
@@ -56,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
         person.setUpdatedAt(LocalDateTime.now());
         person = personRepository.save(person);
 
-        Role userRole = roleRepository.findByRoleName((RoleName.USER));
+        Role userRole = roleRepository.findByRoleName(RoleName.USER);
 
         User user = User.builder()
                 .username(registerForm.getUsername())
@@ -73,24 +63,29 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
     }
 
-
-    @Override
-    public boolean isUsernameTaken(String username) {
-        return userRepository.existsUserByUsername((username));
-    }
-
-    @Override
-    public boolean isEmailTaken(String email) {
-        return userRepository.existsUserByEmail((email));
-    }
-
-    @Override
     public String handleUserRegistration(RegisterForm registerForm, BindingResult result, Model model) {
-        return authHandler.handleUserRegistration(registerForm, result, model);
+        if (validationService.handleRegistrationValidationErrors(result, model, registerForm)) {
+            return "auth/auth";
+        }
+
+        registerUser(registerForm);
+        return "redirect:/auth?registered";
     }
 
-    @Override
     public String handleAuthPage(Model model, Authentication authentication) {
-        return authHandler.handleAuthPage(model, authentication);
+        if (authentication != null && authentication.isAuthenticated()) {
+            if (authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                return "redirect:/admin";
+            } else {
+                return "redirect:/user";
+            }
+        }
+
+        if (!model.containsAttribute("userRegistration")) {
+            model.addAttribute("userRegistration", new RegisterForm());
+        }
+
+        return "auth/auth";
     }
 }

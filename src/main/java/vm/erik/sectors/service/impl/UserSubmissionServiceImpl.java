@@ -8,19 +8,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import vm.erik.sectors.exceptions.SubmissionNotFoundException;
-import vm.erik.sectors.exceptions.UserNotFoundException;
+import vm.erik.sectors.handler.UserSubmissionHandler;
 import vm.erik.sectors.model.Sector;
 import vm.erik.sectors.model.User;
 import vm.erik.sectors.model.UserSubmission;
 import vm.erik.sectors.repository.SectorRepository;
-import vm.erik.sectors.repository.UserRepository;
 import vm.erik.sectors.repository.UserSubmissionRepository;
-import vm.erik.sectors.service.SectorService;
-import vm.erik.sectors.service.UserService;
 import vm.erik.sectors.service.UserSubmissionService;
-import vm.erik.sectors.validation.ValidationService;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -34,21 +28,13 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
 
     private final UserSubmissionRepository userSubmissionRepository;
     private final SectorRepository sectorRepository;
-    private final UserRepository userRepository;
-    private final ValidationService validationService;
-    private final UserService userService;
-    private final SectorService sectorService;
+    private final UserSubmissionHandler userSubmissionHandler;
 
     public UserSubmissionServiceImpl(UserSubmissionRepository userSubmissionRepository,
-                                   SectorRepository sectorRepository, UserRepository userRepository,
-                                   ValidationService validationService, UserService userService,
-                                   SectorService sectorService) {
+                                     SectorRepository sectorRepository, UserSubmissionHandler userSubmissionHandler) {
         this.userSubmissionRepository = userSubmissionRepository;
         this.sectorRepository = sectorRepository;
-        this.userRepository = userRepository;
-        this.validationService = validationService;
-        this.userService = userService;
-        this.sectorService = sectorService;
+        this.userSubmissionHandler = userSubmissionHandler;
     }
 
     @Override
@@ -84,7 +70,7 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
     @Override
     public UserSubmission createSubmission(User user, UserSubmission submission, List<Long> sectorIds) {
         log.debug("Creating submission for user: {}, submission name: {}, agreeToTerms: {}, sectorIds: {}",
-                 user.getUsername(), submission.getName(), submission.getAgreeToTerms(), sectorIds);
+                user.getUsername(), submission.getName(), submission.getAgreeToTerms(), sectorIds);
 
         submission.setUser(user);
         submission.setCreatedAt(LocalDateTime.now());
@@ -233,119 +219,38 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
 
     @Override
     public String handleSubmissionCreation(UserSubmission submission, BindingResult result,
-                                         List<Long> selectedSectors, Authentication authentication, Model model) {
-        User currentUser = userService.getCurrentUser(authentication);
-
-        if (validationService.handleValidationErrors(result, model, submission, "submission")) {
-            model.addAttribute("user", currentUser);
-            model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
-            return "user/submission-form";
-        }
-
-        createSubmission(currentUser, submission, selectedSectors);
-        return "redirect:/user/submissions";
+                                           List<Long> selectedSectors, Authentication authentication, Model model) {
+        return userSubmissionHandler.handleSubmissionCreation(submission, result, selectedSectors, authentication, model);
     }
 
     @Override
     public String handleSubmissionUpdate(Long id, UserSubmission submission, BindingResult result,
-                                       List<Long> selectedSectors, Authentication authentication, Model model) {
-        User currentUser = userService.getCurrentUser(authentication);
-
-        if (validationService.handleValidationErrors(result, model, submission, "submission")) {
-            model.addAttribute("user", currentUser);
-            model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
-            return "user/submission-form";
-        }
-
-        updateSubmission(currentUser, id, submission, selectedSectors);
-        return "redirect:/user/submission/" + id;
+                                         List<Long> selectedSectors, Authentication authentication, Model model) {
+        return userSubmissionHandler.handleSubmissionUpdate(id, submission, result, selectedSectors, authentication, model);
     }
 
     @Override
     public String handleSubmissionStatusToggle(Long submissionId, Authentication authentication) {
-        User currentUser = userService.getCurrentUser(authentication);
-        if (currentUser == null) {
-            throw new UserNotFoundException("User not found");
-        }
-
-        UserSubmission submission = getUserSubmission(currentUser, submissionId);
-        if (submission == null) {
-            throw new SubmissionNotFoundException("Submission not found or access denied");
-        }
-
-        submission.setIsActive(!submission.getIsActive());
-        userSubmissionRepository.save(submission);
-
-        return "redirect:/user/submissions";
+        return userSubmissionHandler.handleSubmissionStatusToggle(submissionId, authentication);
     }
 
     @Override
     public String handleViewSubmissions(Model model, Authentication authentication) {
-        User currentUser = userService.getCurrentUser(authentication);
-        if (currentUser == null) {
-            throw new UserNotFoundException("User not found");
-        }
-
-        List<UserSubmission> submissions = getUserSubmissions(currentUser);
-
-        model.addAttribute("user", currentUser);
-        model.addAttribute("submissions", submissions);
-
-        return "user/submissions";
+        return userSubmissionHandler.handleViewSubmissions(model, authentication);
     }
 
     @Override
     public String handleViewSubmission(Long id, Model model, Authentication authentication) {
-        User currentUser = userService.getCurrentUser(authentication);
-        if (currentUser == null) {
-            throw new UserNotFoundException("User not found");
-        }
-
-        UserSubmission submission = getUserSubmission(currentUser, id);
-        if (submission == null) {
-            throw new SubmissionNotFoundException("Submission not found");
-        }
-
-        model.addAttribute("user", currentUser);
-        model.addAttribute("submission", submission);
-        model.addAttribute("sectorHierarchy", sectorService.getAllSectorsHierarchy());
-        model.addAttribute("mostSpecificSectors", getMostSpecificSelectedSectors(submission));
-
-        return "user/submission-details";
+        return userSubmissionHandler.handleViewSubmission(id, model, authentication);
     }
 
     @Override
     public String handleNewSubmissionForm(Model model, Authentication authentication) {
-        User currentUser = userService.getCurrentUser(authentication);
-        if (currentUser == null) {
-            throw new UserNotFoundException("User not found");
-        }
-
-        UserSubmission submission = new UserSubmission();
-
-        model.addAttribute("user", currentUser);
-        model.addAttribute("submission", submission);
-        model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
-
-        return "user/submission-form";
+        return userSubmissionHandler.handleNewSubmissionForm(model, authentication);
     }
 
     @Override
     public String handleEditSubmissionForm(Long id, Model model, Authentication authentication) {
-        User currentUser = userService.getCurrentUser(authentication);
-        if (currentUser == null) {
-            throw new UserNotFoundException("User not found");
-        }
-
-        UserSubmission submission = getUserSubmission(currentUser, id);
-        if (submission == null) {
-            throw new SubmissionNotFoundException("Submission not found");
-        }
-
-        model.addAttribute("user", currentUser);
-        model.addAttribute("submission", submission);
-        model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
-
-        return "user/submission-form";
+        return userSubmissionHandler.handleEditSubmissionForm(id, model, authentication);
     }
 }

@@ -20,23 +20,22 @@ public class UserController {
 
     private final UserService userService;
     private final UserSubmissionService userSubmissionService;
-    private final AuthController authController;
 
     @GetMapping
     public String userDashboard(Model model, Authentication authentication) {
-        authController.addUserRoleToModel(model, authentication);
+        userService.addUserRoleToModel(model, authentication);
         return userService.handleUserDashboard(model, authentication);
     }
 
     @GetMapping("/submissions")
     public String viewSubmissions(Model model, Authentication authentication) {
-        authController.addUserRoleToModel(model, authentication);
+        userService.addUserRoleToModel(model, authentication);
         return userSubmissionService.handleViewSubmissions(model, authentication);
     }
 
     @GetMapping("/submission/new")
     public String newSubmissionForm(Model model, Authentication authentication) {
-        authController.addUserRoleToModel(model, authentication);
+        userService.addUserRoleToModel(model, authentication);
         return userSubmissionService.handleNewSubmissionForm(model, authentication);
     }
 
@@ -47,19 +46,19 @@ public class UserController {
                                    Authentication authentication,
                                    Model model) {
 
-        authController.addUserRoleToModel(model, authentication);
+        userService.addUserRoleToModel(model, authentication);
         return userSubmissionService.handleSubmissionCreation(submission, result, selectedSectors, authentication, model);
     }
 
     @GetMapping("/submission/{id}")
     public String viewSubmission(@PathVariable Long id, Model model, Authentication authentication) {
-        authController.addUserRoleToModel(model, authentication);
+        userService.addUserRoleToModel(model, authentication);
         return userSubmissionService.handleViewSubmission(id, model, authentication);
     }
 
     @GetMapping("/submission/{id}/edit")
     public String editSubmissionForm(@PathVariable Long id, Model model, Authentication authentication) {
-        authController.addUserRoleToModel(model, authentication);
+        userService.addUserRoleToModel(model, authentication);
         return userSubmissionService.handleEditSubmissionForm(id, model, authentication);
     }
 
@@ -71,13 +70,13 @@ public class UserController {
                                    Authentication authentication,
                                    Model model) {
 
-        authController.addUserRoleToModel(model, authentication);
+        userService.addUserRoleToModel(model, authentication);
         return userSubmissionService.handleSubmissionUpdate(id, submission, result, selectedSectors, authentication, model);
     }
 
     @GetMapping("/profile")
     public String viewProfile(Model model, Authentication authentication) {
-        authController.addUserRoleToModel(model, authentication);
+        userService.addUserRoleToModel(model, authentication);
         return userService.handleViewSettings(model, authentication);
     }
 

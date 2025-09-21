@@ -25,20 +25,7 @@ public class AuthController {
 
     @GetMapping()
     public String authPage(Model model, Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated()) {
-            if (authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-                return "redirect:/admin";
-            } else {
-                return "redirect:/user";
-            }
-        }
-
-        if (!model.containsAttribute("userRegistration")) {
-            model.addAttribute("userRegistration", new RegisterForm());
-        }
-
-        return "auth/auth";
+        return authService.handleAuthPage(model, authentication);
     }
 
     @PostMapping("/register")
@@ -56,19 +43,4 @@ public class AuthController {
         return "redirect:/auth";
     }
 
-    /**
-     * Add user role to model based on authentication
-     */
-    public void addUserRoleToModel(Model model, Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated()) {
-            if (authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-                model.addAttribute("userRole", "ADMIN");
-            } else {
-                model.addAttribute("userRole", "USER");
-            }
-        } else {
-            model.addAttribute("userRole", null);
-        }
-    }
 }

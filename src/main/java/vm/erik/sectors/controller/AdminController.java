@@ -8,14 +8,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vm.erik.sectors.model.Sector;
-import vm.erik.sectors.model.User;
-import vm.erik.sectors.model.UserSubmission;
 import vm.erik.sectors.service.AdminService;
 import vm.erik.sectors.service.SectorService;
 import vm.erik.sectors.service.UserService;
-import vm.erik.sectors.service.UserSubmissionService;
-
-import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -23,122 +18,53 @@ public class AdminController {
 
     private final AdminService adminService;
     private final UserService userService;
-    private final UserSubmissionService userSubmissionService;
     private final SectorService sectorService;
-    private final AuthController authController;
 
-    public AdminController(AdminService adminService, UserService userService,
-                           UserSubmissionService userSubmissionService, SectorService sectorService,
-                           AuthController authController) {
+    public AdminController(AdminService adminService, UserService userService, SectorService sectorService) {
         this.adminService = adminService;
         this.userService = userService;
-        this.userSubmissionService = userSubmissionService;
+
         this.sectorService = sectorService;
-        this.authController = authController;
     }
 
     @GetMapping
     public String adminDashboard(Model model, Authentication authentication) {
-        authController.addUserRoleToModel(model, authentication);
-
-        // Get admin statistics
-        var stats = adminService.getAdminStats();
-        model.addAttribute("stats", stats);
-
-        // Get current admin user
-        User currentAdmin = userService.getCurrentUser(authentication);
-
-        // Get all users except current admin
-        var allUsers = adminService.getAllUsers();
-        var users = allUsers.stream()
-                .filter(user -> !user.getUsername().equals(currentAdmin.getUsername()))
-                .toList();
-        model.addAttribute("users", users);
-
-        return "admin/dashboard";
+        userService.addUserRoleToModel(model, authentication);
+        return adminService.handleAdminDashboard(model, authentication);
     }
 
     @PostMapping("/block")
     public String blockUser(@RequestParam Long userId, RedirectAttributes redirectAttributes) {
-        try {
-            adminService.blockStatusToggler(userId);
-            redirectAttributes.addFlashAttribute("successMessage", "User has been blocked successfully.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to block user: " + e.getMessage());
-        }
-        return "redirect:/admin";
+        return adminService.handleBlockUser(userId, redirectAttributes);
     }
 
     @PostMapping("/unblock")
     public String unblockUser(@RequestParam Long userId, RedirectAttributes redirectAttributes) {
-        try {
-            adminService.blockStatusToggler(userId);
-            redirectAttributes.addFlashAttribute("successMessage", "User has been unblocked successfully.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to unblock user: " + e.getMessage());
-        }
-        return "redirect:/admin";
+        return adminService.handleUnblockUser(userId, redirectAttributes);
     }
 
     @GetMapping("/user/{userId}")
     @ResponseBody
     public Object getUserDetails(@PathVariable Long userId) {
-        try {
-            return adminService.getUserDetails(userId);
-        } catch (Exception e) {
-            return "{\"error\": \"" + e.getMessage() + "\"}";
-        }
+        return adminService.handleGetUserDetails(userId);
     }
 
-    // Admin view for other users' submissions (read-only)
     @GetMapping("/view-submission/{submissionId}")
     public String viewUserSubmission(@PathVariable Long submissionId, Model model, Authentication authentication) {
-        authController.addUserRoleToModel(model, authentication);
-        try {
-            // Get the submission directly by ID (admin can view any submission)
-            UserSubmission submission = userSubmissionService.getSubmissionById(submissionId);
-
-            if (submission == null) {
-                return "redirect:/admin?error=submission-not-found";
-            }
-
-            model.addAttribute("submission", submission);
-            model.addAttribute("mostSpecificSectors", userSubmissionService.getMostSpecificSelectedSectors(submission));
-            model.addAttribute("isAdminView", true); // Flag to indicate this is admin viewing user submission
-
-            return "admin/view-user-submission";
-        } catch (Exception e) {
-            return "redirect:/admin?error=access-denied";
-        }
+        userService.addUserRoleToModel(model, authentication);
+        return adminService.handleViewUserSubmission(submissionId, model);
     }
 
-    // Sector Management
     @GetMapping("/sectors")
     public String manageSectors(Model model, Authentication authentication) {
-        authController.addUserRoleToModel(model, authentication);
-        List<Sector> allSectors = sectorService.getAllSectorsHierarchy();
-        model.addAttribute("sectors", allSectors);
-        return "admin/sectors";
+        userService.addUserRoleToModel(model, authentication);
+        return adminService.handleManageSectors(model);
     }
 
     @GetMapping("/sector/new")
     public String newSectorForm(@RequestParam(required = false) Long parentId, Model model, Authentication authentication) {
-        authController.addUserRoleToModel(model, authentication);
-        Sector sector = new Sector();
-
-        if (parentId != null) {
-            Sector parent = sectorService.getSectorById(parentId);
-            if (parent != null && parent.getLevel() < 2) { // Max level is 2 (0, 1, 2)
-                sector.setParent(parent);
-                sector.setLevel(parent.getLevel() + 1);
-            }
-        } else {
-            sector.setLevel(0); // Root level
-        }
-
-        model.addAttribute("sector", sector);
-        model.addAttribute("parentSectors", sectorService.getActiveSectorsByMaxLevel(1)); // Can add to level 0 or 1
-        return "admin/sector-form";
+        userService.addUserRoleToModel(model, authentication);
+        return adminService.handleNewSectorForm(parentId, model);
     }
 
     @PostMapping("/sector/new")
@@ -153,15 +79,8 @@ public class AdminController {
 
     @GetMapping("/sector/{id}/edit")
     public String editSectorForm(@PathVariable Long id, Model model, Authentication authentication) {
-        authController.addUserRoleToModel(model, authentication);
-        Sector sector = sectorService.getSectorById(id);
-        if (sector == null) {
-            return "redirect:/admin/sectors?error=notfound";
-        }
-
-        model.addAttribute("sector", sector);
-        model.addAttribute("parentSectors", sectorService.getActiveSectorsByMaxLevel(1));
-        return "admin/sector-form";
+        userService.addUserRoleToModel(model, authentication);
+        return adminService.handleEditSectorForm(id, model);
     }
 
     @PostMapping("/sector/{id}/edit")
@@ -177,46 +96,24 @@ public class AdminController {
 
     @PostMapping("/sector/{id}/deactivate")
     public String deactivateSector(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            sectorService.deactivateSector(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Sector deactivated successfully. Existing user selections are preserved.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error deactivating sector: " + e.getMessage());
-        }
-        return "redirect:/admin/sectors";
+        return adminService.handleDeactivateSector(id, redirectAttributes);
     }
 
     @PostMapping("/sector/{id}/activate")
     public String activateSector(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            sectorService.activateSector(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Sector activated successfully.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error activating sector: " + e.getMessage());
-        }
-        return "redirect:/admin/sectors";
+        return adminService.handleActivateSector(id, redirectAttributes);
     }
 
     @GetMapping("/sector/{id}")
     public String viewSector(@PathVariable Long id, Model model, Authentication authentication) {
-        authController.addUserRoleToModel(model, authentication);
-        Sector sector = sectorService.getSectorById(id);
-        if (sector == null) {
-            return "redirect:/admin/sectors?error=notfound";
-        }
-
-        model.addAttribute("sector", sector);
-        model.addAttribute("usageCount", sectorService.getSectorUsageCount(id));
-        model.addAttribute("childrenCount", sector.getChildren().size());
-        return "admin/sector-details";
+        userService.addUserRoleToModel(model, authentication);
+        return adminService.handleViewSector(id, model);
     }
 
     @GetMapping("/profile")
     public String viewProfile(Model model, Authentication authentication) {
-        authController.addUserRoleToModel(model, authentication);
-        User currentAdmin = userService.getCurrentUser(authentication);
-        model.addAttribute("user", currentAdmin);
-        return "admin/profile";
+        userService.addUserRoleToModel(model, authentication);
+        return adminService.handleViewProfile(model, authentication);
     }
 
     @PostMapping("/profile/update")
@@ -226,16 +123,7 @@ public class AdminController {
                                 Authentication authentication,
                                 RedirectAttributes redirectAttributes) {
 
-        User currentAdmin = userService.getCurrentUser(authentication);
-
-        try {
-            userService.updateUserProfile(currentAdmin, firstName, lastName, email);
-            redirectAttributes.addFlashAttribute("successMessage", "Profile updated successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error updating profile: " + e.getMessage());
-        }
-
-        return "redirect:/admin/profile";
+        return adminService.handleUpdateProfile(firstName, lastName, email, authentication, redirectAttributes);
     }
 
     @PostMapping("/profile/password")
@@ -245,25 +133,6 @@ public class AdminController {
                                  Authentication authentication,
                                  RedirectAttributes redirectAttributes) {
 
-        if (!newPassword.equals(confirmPassword)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "New passwords do not match!");
-            return "redirect:/admin/profile";
-        }
-
-        User currentAdmin = userService.getCurrentUser(authentication);
-
-        if (currentPassword.equals(newPassword)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "New password must be different from your current password!");
-            return "redirect:/admin/profile";
-        }
-
-        try {
-            userService.changePassword(currentAdmin, currentPassword, newPassword);
-            redirectAttributes.addFlashAttribute("successMessage", "Password changed successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error changing password: " + e.getMessage());
-        }
-
-        return "redirect:/admin/profile";
+        return adminService.handleChangePassword(currentPassword, newPassword, confirmPassword, authentication, redirectAttributes);
     }
 }
