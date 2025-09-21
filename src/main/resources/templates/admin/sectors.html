@@ -1,10 +1,235 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sector Management - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sector-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+        .sector-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .sector-level-0 {
+            border-left: 4px solid #1976d2;
+        }
+        .sector-level-1 {
+            border-left: 4px solid #7b1fa2;
+            margin-left: 1.5rem;
+        }
+        .sector-level-2 {
+            border-left: 4px solid #388e3c;
+            margin-left: 3rem;
+        }
+        .sector-inactive {
+            opacity: 0.6;
+            background-color: #f8f9fa;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="fas fa-industry me-2"></i>Sectors Management
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link text-white" th:href="@{/admin}">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Admin Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
 
+    <div class="container-fluid py-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold text-dark">
+                        <i class="fas fa-industry me-2 text-primary"></i>Sector Management
+                    </h1>
+                    <p class="text-muted">Manage industry sectors and their hierarchical structure.</p>
+                </div>
+                <div>
+                    <a th:href="@{/admin/sector/new}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add New Sector
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Sectors List -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-sitemap me-2 text-primary"></i>Sector Hierarchy
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${sectors != null and not sectors.isEmpty()}">
+                            <div th:each="sector : ${sectors}">
+                                <!-- Level 0 Sectors (Root) -->
+                                <div class="mb-3">
+                                    <div class="card sector-card sector-level-0" th:classappend="${not sector.isActive} ? 'sector-inactive' : ''">
+                                        <div class="card-body py-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold" th:text="${sector.name}">Sector Name</h6>
+                                                    <small class="text-muted">
+                                                        Level 0 - Root Sector
+                                                        <span th:if="${not sector.isActive}" class="badge bg-secondary ms-2">Inactive</span>
+                                                        <span th:if="${sector.isActive}" class="badge bg-success ms-2">Active</span>
+                                                    </small>
+                                                </div>
+                                                <div class="btn-group" role="group">
+                                                    <a th:href="@{/admin/sector/{id}(id=${sector.id})}" class="btn btn-sm btn-outline-info">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a th:href="@{/admin/sector/{id}/edit(id=${sector.id})}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a th:href="@{/admin/sector/new?parentId={id}(id=${sector.id})}" class="btn btn-sm btn-outline-success">
+                                                        <i class="fas fa-plus"></i>
+                                                    </a>
+                                                    <form th:if="${sector.isActive}" th:action="@{/admin/sector/{id}/deactivate(id=${sector.id})}" method="post" style="display: inline;">
+                                                        <button type="submit" class="btn btn-sm btn-outline-warning" onclick="return confirm('Deactivate this sector and all its children?')">
+                                                            <i class="fas fa-pause"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form th:if="${not sector.isActive}" th:action="@{/admin/sector/{id}/activate(id=${sector.id})}" method="post" style="display: inline;">
+                                                        <button type="submit" class="btn btn-sm btn-outline-success">
+                                                            <i class="fas fa-play"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Level 1 Sectors (Children) -->
+                                    <div th:if="${sector.children != null and not sector.children.isEmpty()}">
+                                        <div th:each="childSector : ${sector.children}" class="mb-2">
+                                            <div class="card sector-card sector-level-1" th:classappend="${not childSector.isActive} ? 'sector-inactive' : ''">
+                                                <div class="card-body py-2">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <h6 class="mb-1" th:text="${childSector.name}">Child Sector</h6>
+                                                            <small class="text-muted">
+                                                                Level 1 - Industry Category
+                                                                <span th:if="${not childSector.isActive}" class="badge bg-secondary ms-2">Inactive</span>
+                                                                <span th:if="${childSector.isActive}" class="badge bg-success ms-2">Active</span>
+                                                            </small>
+                                                        </div>
+                                                        <div class="btn-group" role="group">
+                                                            <a th:href="@{/admin/sector/{id}(id=${childSector.id})}" class="btn btn-sm btn-outline-info">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            <a th:href="@{/admin/sector/{id}/edit(id=${childSector.id})}" class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-edit"></i>
+                                                            </a>
+                                                            <a th:href="@{/admin/sector/new?parentId={id}(id=${childSector.id})}" class="btn btn-sm btn-outline-success">
+                                                                <i class="fas fa-plus"></i>
+                                                            </a>
+                                                            <form th:if="${childSector.isActive}" th:action="@{/admin/sector/{id}/deactivate(id=${childSector.id})}" method="post" style="display: inline;">
+                                                                <button type="submit" class="btn btn-sm btn-outline-warning" onclick="return confirm('Deactivate this sector and all its children?')">
+                                                                    <i class="fas fa-pause"></i>
+                                                                </button>
+                                                            </form>
+                                                            <form th:if="${not childSector.isActive}" th:action="@{/admin/sector/{id}/activate(id=${childSector.id})}" method="post" style="display: inline;">
+                                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                                    <i class="fas fa-play"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Level 2 Sectors (Grandchildren) -->
+                                            <div th:if="${childSector.children != null and not childSector.children.isEmpty()}">
+                                                <div th:each="grandChildSector : ${childSector.children}" class="mb-2">
+                                                    <div class="card sector-card sector-level-2" th:classappend="${not grandChildSector.isActive} ? 'sector-inactive' : ''">
+                                                        <div class="card-body py-2">
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <div>
+                                                                    <h6 class="mb-1 small" th:text="${grandChildSector.name}">Grandchild Sector</h6>
+                                                                    <small class="text-muted">
+                                                                        Level 2 - Specific Subcategory
+                                                                        <span th:if="${not grandChildSector.isActive}" class="badge bg-secondary ms-2">Inactive</span>
+                                                                        <span th:if="${grandChildSector.isActive}" class="badge bg-success ms-2">Active</span>
+                                                                    </small>
+                                                                </div>
+                                                                <div class="btn-group" role="group">
+                                                                    <a th:href="@{/admin/sector/{id}(id=${grandChildSector.id})}" class="btn btn-sm btn-outline-info">
+                                                                        <i class="fas fa-eye"></i>
+                                                                    </a>
+                                                                    <a th:href="@{/admin/sector/{id}/edit(id=${grandChildSector.id})}" class="btn btn-sm btn-outline-primary">
+                                                                        <i class="fas fa-edit"></i>
+                                                                    </a>
+                                                                    <form th:if="${grandChildSector.isActive}" th:action="@{/admin/sector/{id}/deactivate(id=${grandChildSector.id})}" method="post" style="display: inline;">
+                                                                        <button type="submit" class="btn btn-sm btn-outline-warning" onclick="return confirm('Deactivate this sector?')">
+                                                                            <i class="fas fa-pause"></i>
+                                                                        </button>
+                                                                    </form>
+                                                                    <form th:if="${not grandChildSector.isActive}" th:action="@{/admin/sector/{id}/activate(id=${grandChildSector.id})}" method="post" style="display: inline;">
+                                                                        <button type="submit" class="btn btn-sm btn-outline-success">
+                                                                            <i class="fas fa-play"></i>
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div th:if="${sectors == null or sectors.isEmpty()}" class="text-center py-5">
+                            <i class="fas fa-industry fa-4x mb-3 text-muted opacity-50"></i>
+                            <h5 class="text-muted mb-3">No sectors found</h5>
+                            <p class="text-muted mb-4">Start by creating your first root sector to build the hierarchy.</p>
+                            <a th:href="@{/admin/sector/new}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Create First Sector
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

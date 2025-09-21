@@ -56,7 +56,7 @@ public class UserController {
 
         model.addAttribute("user", currentUser);
         model.addAttribute("submission", submission);
-        model.addAttribute("sectors", sectorService.getAllSectorsHierarchy());
+        model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
 
         return "user/submission-form";
     }
@@ -76,7 +76,7 @@ public class UserController {
         if (submission.getName() == null || submission.getName().trim().isEmpty()) {
             model.addAttribute("user", currentUser);
             model.addAttribute("submission", submission);
-            model.addAttribute("sectors", sectorService.getAllSectorsHierarchy());
+            model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
             model.addAttribute("errorMessage", "Name is required");
             return "user/submission-form";
         }
@@ -84,7 +84,7 @@ public class UserController {
         if (submission.getAgreeToTerms() == null || !submission.getAgreeToTerms()) {
             model.addAttribute("user", currentUser);
             model.addAttribute("submission", submission);
-            model.addAttribute("sectors", sectorService.getAllSectorsHierarchy());
+            model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
             model.addAttribute("errorMessage", "You must agree to the terms and conditions");
             return "user/submission-form";
         }
@@ -96,7 +96,7 @@ public class UserController {
         } catch (Exception e) {
             model.addAttribute("user", currentUser);
             model.addAttribute("submission", submission);
-            model.addAttribute("sectors", sectorService.getAllSectorsHierarchy());
+            model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
             model.addAttribute("errorMessage", "Error creating submission: " + e.getMessage());
             return "user/submission-form";
         }
@@ -130,7 +130,7 @@ public class UserController {
 
         model.addAttribute("user", currentUser);
         model.addAttribute("submission", submission);
-        model.addAttribute("sectors", sectorService.getAllSectorsHierarchy());
+        model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
 
         return "user/submission-form";
     }
@@ -148,7 +148,7 @@ public class UserController {
 
         if (result.hasErrors()) {
             model.addAttribute("user", currentUser);
-            model.addAttribute("sectors", sectorService.getAllSectorsHierarchy());
+            model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
             return "user/submission-form";
         }
 

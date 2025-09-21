@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Sector: ' + ${sector.name} + ' - Admin Panel'">Sector Details - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .detail-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .stats-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+        .stats-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        .level-indicator {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+        .level-0 {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        .level-1 {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+            border: 1px solid #ce93d8;
+        }
+        .level-2 {
+            background-color: #e8f5e8;
+            color: #388e3c;
+            border: 1px solid #a5d6a7;
+        }
+        .breadcrumb-item {
+            font-weight: 500;
+        }
+        .child-sector {
+            border-left: 3px solid #dee2e6;
+            padding-left: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .child-sector:hover {
+            border-left-color: #667eea;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="fas fa-industry me-2"></i>Sectors Management
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link text-white" th:href="@{/admin/sectors}">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Sectors
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12 d-flex justify-content-between align-items-start">
+                <div>
+                    <h1 class="fw-bold text-dark">
+                        <i class="fas fa-industry me-2 text-primary"></i>
+                        <span th:text="${sector.name}">Sector Name</span>
+                    </h1>
+
+                    <!-- Breadcrumb -->
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <i class="fas fa-home me-1"></i>
+                                <a th:href="@{/admin/sectors}" class="text-decoration-none">Sectors</a>
+                            </li>
+                            <li class="breadcrumb-item" th:if="${sector.parent != null and sector.parent.parent != null}">
+                                <a th:href="@{/admin/sector/{id}(id=${sector.parent.parent.id})}"
+                                   th:text="${sector.parent.parent.name}"
+                                   class="text-decoration-none">Grandparent</a>
+                            </li>
+                            <li class="breadcrumb-item" th:if="${sector.parent != null}">
+                                <a th:href="@{/admin/sector/{id}(id=${sector.parent.id})}"
+                                   th:text="${sector.parent.name}"
+                                   class="text-decoration-none">Parent</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page" th:text="${sector.name}">Current Sector</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="btn-group" role="group">
+                    <a th:href="@{/admin/sector/{id}/edit(id=${sector.id})}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-2"></i>Edit
+                    </a>
+                    <a th:href="@{/admin/sector/new?parentId={id}(id=${sector.id})}"
+                       th:if="${sector.level < 2}"
+                       class="btn btn-outline-success">
+                        <i class="fas fa-plus me-2"></i>Add Child
+                    </a>
+                    <form th:if="${sector.isActive}" th:action="@{/admin/sector/{id}/deactivate(id=${sector.id})}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-outline-warning" onclick="return confirm('Deactivate this sector and all its children?')">
+                            <i class="fas fa-pause me-2"></i>Deactivate
+                        </button>
+                    </form>
+                    <form th:if="${not sector.isActive}" th:action="@{/admin/sector/{id}/activate(id=${sector.id})}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-outline-success">
+                            <i class="fas fa-play me-2"></i>Activate
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon text-primary mb-3">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-1" th:text="${usageCount ?: 0}">0</h3>
+                        <p class="text-muted mb-0">User Selections</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon text-success mb-3">
+                            <i class="fas fa-sitemap"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-1" th:text="${childrenCount ?: 0}">0</h3>
+                        <p class="text-muted mb-0">Child Sectors</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon text-info mb-3">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-1" th:text="${sector.level}">0</h3>
+                        <p class="text-muted mb-0">Hierarchy Level</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-3" th:classappend="${sector.isActive} ? 'text-success' : 'text-secondary'">
+                            <i th:class="${sector.isActive} ? 'fas fa-check-circle' : 'fas fa-pause-circle'"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-1" th:text="${sector.isActive} ? 'Active' : 'Inactive'">Status</h3>
+                        <p class="text-muted mb-0">Current Status</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sector Details -->
+        <div class="row">
+            <!-- Basic Information -->
+            <div class="col-md-8 mb-4">
+                <div class="card detail-card h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>Sector Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="fw-bold text-muted mb-2">Sector Level</h6>
+                                <div class="level-indicator" th:classappend="${sector.level == 0} ? 'level-0' : (${sector.level == 1} ? 'level-1' : 'level-2')">
+                                    <i th:class="${sector.level == 0} ? 'fas fa-building' : (${sector.level == 1} ? 'fas fa-industry' : 'fas fa-cog')" class="me-2"></i>
+                                    Level <span th:text="${sector.level}">0</span> -
+                                    <span th:text="${sector.level == 0} ? 'Root Sector' : (${sector.level == 1} ? 'Industry Category' : 'Specific Subcategory')">Root Sector</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-muted mb-2">Sector Name</h6>
+                                <p class="mb-0" th:text="${sector.name}">Sector Name</p>
+                            </div>
+                            <div class="col-md-6" th:if="${sector.sortOrder != null}">
+                                <h6 class="fw-bold text-muted mb-2">Sort Order</h6>
+                                <p class="mb-0" th:text="${sector.sortOrder}">Sort Order</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3" th:if="${sector.description != null and not #strings.isEmpty(sector.description)}">
+                            <div class="col-12">
+                                <h6 class="fw-bold text-muted mb-2">Description</h6>
+                                <p class="mb-0" th:text="${sector.description}">Sector Description</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-muted mb-2">Created</h6>
+                                <p class="mb-0">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    <span th:text="${#temporals.format(sector.createdAt, 'MMMM dd, yyyy HH:mm')}">Date</span>
+                                </p>
+                            </div>
+                            <div class="col-md-6" th:if="${sector.updatedAt != sector.createdAt}">
+                                <h6 class="fw-bold text-muted mb-2">Last Updated</h6>
+                                <p class="mb-0">
+                                    <i class="fas fa-edit me-1"></i>
+                                    <span th:text="${#temporals.format(sector.updatedAt, 'MMMM dd, yyyy HH:mm')}">Date</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hierarchy Information -->
+            <div class="col-md-4 mb-4">
+                <div class="card detail-card h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-sitemap me-2 text-primary"></i>Hierarchy
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Parent Information -->
+                        <div th:if="${sector.parent != null}" class="mb-4">
+                            <h6 class="fw-bold text-muted mb-2">Parent Sector</h6>
+                            <div class="border rounded p-3 bg-light">
+                                <a th:href="@{/admin/sector/{id}(id=${sector.parent.id})}"
+                                   class="text-decoration-none">
+                                    <strong th:text="${sector.parent.name}">Parent Name</strong>
+                                </a>
+                                <small class="text-muted d-block">
+                                    Level <span th:text="${sector.parent.level}">0</span>
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Children Information -->
+                        <div th:if="${sector.children != null and not sector.children.isEmpty()}">
+                            <h6 class="fw-bold text-muted mb-2">Child Sectors</h6>
+                            <div th:each="child : ${sector.children}" class="child-sector">
+                                <a th:href="@{/admin/sector/{id}(id=${child.id})}"
+                                   class="text-decoration-none">
+                                    <strong th:text="${child.name}">Child Name</strong>
+                                </a>
+                                <span th:if="${child.isActive}" class="badge bg-success ms-2">Active</span>
+                                <span th:if="${not child.isActive}" class="badge bg-secondary ms-2">Inactive</span>
+                                <small class="text-muted d-block">
+                                    Level <span th:text="${child.level}">1</span>
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- No Children -->
+                        <div th:if="${sector.children == null or sector.children.isEmpty()}" class="text-center py-3">
+                            <i class="fas fa-sitemap fa-2x mb-2 text-muted opacity-50"></i>
+                            <p class="text-muted mb-0">No child sectors</p>
+                            <a th:if="${sector.level < 2}"
+                               th:href="@{/admin/sector/new?parentId={id}(id=${sector.id})}"
+                               class="btn btn-sm btn-outline-primary mt-2">
+                                <i class="fas fa-plus me-1"></i>Add Child
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Information -->
+        <div class="row" th:if="${usageCount != null and usageCount > 0}">
+            <div class="col-12">
+                <div class="card detail-card">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-users me-2 text-primary"></i>Usage Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            This sector has been selected by <strong th:text="${usageCount}">0</strong> users in their submissions.
+                            Deactivating this sector will hide it from new submissions but preserve existing user selections.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

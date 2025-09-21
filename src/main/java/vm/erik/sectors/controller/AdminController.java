@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import vm.erik.sectors.model.Sector;
 import vm.erik.sectors.model.User;
 import vm.erik.sectors.model.UserSubmission;
 import vm.erik.sectors.service.AdminService;
@@ -103,6 +104,164 @@ public class AdminController {
         } catch (Exception e) {
             return "redirect:/admin?error=access-denied";
         }
+    }
+
+    // Sector Management
+    @GetMapping("/sectors")
+    public String manageSectors(Model model) {
+        List<Sector> allSectors = sectorService.getAllSectorsHierarchy();
+        model.addAttribute("sectors", allSectors);
+        return "admin/sectors";
+    }
+
+    @GetMapping("/sector/new")
+    public String newSectorForm(@RequestParam(required = false) Long parentId, Model model) {
+        Sector sector = new Sector();
+
+        if (parentId != null) {
+            Sector parent = sectorService.getSectorById(parentId);
+            if (parent != null && parent.getLevel() < 2) { // Max level is 2 (0, 1, 2)
+                sector.setParent(parent);
+                sector.setLevel(parent.getLevel() + 1);
+            }
+        } else {
+            sector.setLevel(0); // Root level
+        }
+
+        model.addAttribute("sector", sector);
+        model.addAttribute("parentSectors", sectorService.getActiveSectorsByMaxLevel(1)); // Can add to level 0 or 1
+        return "admin/sector-form";
+    }
+
+    @PostMapping("/sector/new")
+    public String createSector(@Valid @ModelAttribute Sector sector,
+                              BindingResult result,
+                              @RequestParam(required = false) Long parentId,
+                              Model model,
+                              RedirectAttributes redirectAttributes) {
+
+        if (result.hasErrors()) {
+            model.addAttribute("parentSectors", sectorService.getActiveSectorsByMaxLevel(1));
+            return "admin/sector-form";
+        }
+
+        try {
+            if (parentId != null) {
+                Sector parent = sectorService.getSectorById(parentId);
+                if (parent != null && parent.getLevel() < 2) {
+                    sector.setParent(parent);
+                    sector.setLevel(parent.getLevel() + 1);
+                } else {
+                    throw new IllegalArgumentException("Invalid parent sector or maximum depth reached");
+                }
+            } else {
+                sector.setLevel(0);
+                sector.setParent(null);
+            }
+
+            sector.setIsActive(true);
+            sectorService.saveSector(sector);
+            redirectAttributes.addFlashAttribute("successMessage", "Sector created successfully!");
+            return "redirect:/admin/sectors";
+        } catch (Exception e) {
+            model.addAttribute("parentSectors", sectorService.getActiveSectorsByMaxLevel(1));
+            model.addAttribute("errorMessage", "Error creating sector: " + e.getMessage());
+            return "admin/sector-form";
+        }
+    }
+
+    @GetMapping("/sector/{id}/edit")
+    public String editSectorForm(@PathVariable Long id, Model model) {
+        Sector sector = sectorService.getSectorById(id);
+        if (sector == null) {
+            return "redirect:/admin/sectors?error=notfound";
+        }
+
+        model.addAttribute("sector", sector);
+        model.addAttribute("parentSectors", sectorService.getActiveSectorsByMaxLevel(1));
+        return "admin/sector-form";
+    }
+
+    @PostMapping("/sector/{id}/edit")
+    public String updateSector(@PathVariable Long id,
+                              @Valid @ModelAttribute Sector sector,
+                              BindingResult result,
+                              @RequestParam(required = false) Long parentId,
+                              Model model,
+                              RedirectAttributes redirectAttributes) {
+
+        if (result.hasErrors()) {
+            model.addAttribute("parentSectors", sectorService.getActiveSectorsByMaxLevel(1));
+            return "admin/sector-form";
+        }
+
+        try {
+            Sector existingSector = sectorService.getSectorById(id);
+            if (existingSector == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Sector not found");
+                return "redirect:/admin/sectors";
+            }
+
+            // Update basic fields
+            existingSector.setName(sector.getName());
+            existingSector.setDescription(sector.getDescription());
+            existingSector.setSortOrder(sector.getSortOrder());
+
+            // Handle parent changes carefully
+            if (parentId != null && !parentId.equals(existingSector.getParent().getId())) {
+                Sector newParent = sectorService.getSectorById(parentId);
+                if (newParent != null && newParent.getLevel() < 2) {
+                    existingSector.setParent(newParent);
+                    existingSector.setLevel(newParent.getLevel() + 1);
+                }
+            } else if (parentId == null && existingSector.getParent() != null) {
+                existingSector.setParent(null);
+                existingSector.setLevel(0);
+            }
+
+            sectorService.saveSector(existingSector);
+            redirectAttributes.addFlashAttribute("successMessage", "Sector updated successfully!");
+            return "redirect:/admin/sectors";
+        } catch (Exception e) {
+            model.addAttribute("parentSectors", sectorService.getActiveSectorsByMaxLevel(1));
+            model.addAttribute("errorMessage", "Error updating sector: " + e.getMessage());
+            return "admin/sector-form";
+        }
+    }
+
+    @PostMapping("/sector/{id}/deactivate")
+    public String deactivateSector(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            sectorService.deactivateSector(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Sector deactivated successfully. Existing user selections are preserved.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error deactivating sector: " + e.getMessage());
+        }
+        return "redirect:/admin/sectors";
+    }
+
+    @PostMapping("/sector/{id}/activate")
+    public String activateSector(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            sectorService.activateSector(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Sector activated successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error activating sector: " + e.getMessage());
+        }
+        return "redirect:/admin/sectors";
+    }
+
+    @GetMapping("/sector/{id}")
+    public String viewSector(@PathVariable Long id, Model model) {
+        Sector sector = sectorService.getSectorById(id);
+        if (sector == null) {
+            return "redirect:/admin/sectors?error=notfound";
+        }
+
+        model.addAttribute("sector", sector);
+        model.addAttribute("usageCount", sectorService.getSectorUsageCount(id));
+        model.addAttribute("childrenCount", sector.getChildren().size());
+        return "admin/sector-details";
     }
 
     @GetMapping("/profile")

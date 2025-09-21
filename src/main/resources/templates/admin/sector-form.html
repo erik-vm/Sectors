@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${sector.id != null ? 'Edit Sector' : 'Add New Sector'} + ' - Admin Panel'">Sector Form - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .form-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .level-indicator {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        .level-0 {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        .level-1 {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+            border: 1px solid #ce93d8;
+        }
+        .level-2 {
+            background-color: #e8f5e8;
+            color: #388e3c;
+            border: 1px solid #a5d6a7;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="fas fa-industry me-2"></i>Sectors Management
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link text-white" th:href="@{/admin/sectors}">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Sectors
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="fw-bold text-dark">
+                    <i class="fas fa-industry me-2 text-primary"></i>
+                    <span th:text="${sector.id != null ? 'Edit Sector' : 'Add New Sector'}">Sector Form</span>
+                </h1>
+                <p class="text-muted" th:text="${sector.id != null ? 'Update sector information and hierarchy.' : 'Create a new sector in the hierarchy.'}">
+                    Manage sector information and hierarchy.
+                </p>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Form -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card form-card">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-edit me-2 text-primary"></i>Sector Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${sector.id != null ? '/admin/sector/' + sector.id + '/edit' : '/admin/sector/new'}"
+                              th:object="${sector}" method="post">
+
+                            <!-- Level and Parent Information -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Sector Level</label>
+                                    <div>
+                                        <span class="level-indicator" th:classappend="${sector.level == 0} ? 'level-0' : (${sector.level == 1} ? 'level-1' : 'level-2')">
+                                            <i th:class="${sector.level == 0} ? 'fas fa-building' : (${sector.level == 1} ? 'fas fa-industry' : 'fas fa-cog')" class="me-2"></i>
+                                            Level <span th:text="${sector.level}">0</span> -
+                                            <span th:text="${sector.level == 0} ? 'Root Sector' : (${sector.level == 1} ? 'Industry Category' : 'Specific Subcategory')">Root Sector</span>
+                                        </span>
+                                    </div>
+                                    <small class="text-muted mt-1 d-block">
+                                        <span th:text="${sector.level == 0} ? 'Top-level sector (Manufacturing, Service, etc.)' : (${sector.level == 1} ? 'Industry category under a root sector' : 'Specific subcategory (maximum depth)')">
+                                            Level description
+                                        </span>
+                                    </small>
+                                </div>
+                                <div class="col-md-6" th:if="${sector.parent != null}">
+                                    <label class="form-label fw-bold">Parent Sector</label>
+                                    <div>
+                                        <span class="badge bg-primary" th:text="${sector.parent.name}">Parent Name</span>
+                                    </div>
+                                    <small class="text-muted mt-1 d-block">This sector will be created under the selected parent.</small>
+                                </div>
+                            </div>
+
+                            <!-- Basic Fields -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label for="name" class="form-label fw-bold">
+                                        Sector Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="name"
+                                           th:field="*{name}"
+                                           required
+                                           maxlength="255"
+                                           placeholder="Enter sector name">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+                                        Name error
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label for="description" class="form-label fw-bold">Description</label>
+                                    <textarea class="form-control"
+                                              id="description"
+                                              th:field="*{description}"
+                                              rows="3"
+                                              maxlength="500"
+                                              placeholder="Enter sector description (optional)"></textarea>
+                                    <div class="form-text">Provide a brief description of this sector (max 500 characters).</div>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">
+                                        Description error
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="sortOrder" class="form-label fw-bold">Sort Order</label>
+                                    <input type="number"
+                                           class="form-control"
+                                           id="sortOrder"
+                                           th:field="*{sortOrder}"
+                                           min="0"
+                                           placeholder="0">
+                                    <div class="form-text">Lower numbers appear first in lists. Leave empty for default ordering.</div>
+                                </div>
+                                <div class="col-md-6" th:if="${sector.id == null and sector.level < 2}">
+                                    <label for="parentId" class="form-label fw-bold">Parent Sector</label>
+                                    <select class="form-select" id="parentId" name="parentId">
+                                        <option value="">-- Select Parent (Optional for Root Level) --</option>
+                                        <option th:each="parent : ${parentSectors}"
+                                                th:value="${parent.id}"
+                                                th:text="${parent.name + ' (Level ' + parent.level + ')'}"
+                                                th:selected="${sector.parent != null and sector.parent.id == parent.id}">
+                                            Parent Option
+                                        </option>
+                                    </select>
+                                    <div class="form-text">
+                                        Select a parent sector to create this as a child sector.
+                                        Leave empty to create a root-level sector.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <a th:href="@{/admin/sectors}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-times me-2"></i>Cancel
+                                        </a>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i th:class="${sector.id != null ? 'fas fa-save' : 'fas fa-plus'}" class="me-2"></i>
+                                            <span th:text="${sector.id != null ? 'Update Sector' : 'Create Sector'}">Save</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Info Card -->
+                <div class="card mt-4 border-0" style="background-color: #f8f9fa;">
+                    <div class="card-body">
+                        <h6 class="fw-bold text-muted mb-3">
+                            <i class="fas fa-info-circle me-2"></i>Sector Hierarchy Guidelines
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="level-indicator level-0 mb-2">
+                                    <i class="fas fa-building me-2"></i>Level 0 - Root
+                                </div>
+                                <small class="text-muted">
+                                    Main industry categories like Manufacturing, Service, Other
+                                </small>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="level-indicator level-1 mb-2">
+                                    <i class="fas fa-industry me-2"></i>Level 1 - Category
+                                </div>
+                                <small class="text-muted">
+                                    Industry subcategories like Food & Beverage, IT, etc.
+                                </small>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="level-indicator level-2 mb-2">
+                                    <i class="fas fa-cog me-2"></i>Level 2 - Specific
+                                </div>
+                                <small class="text-muted">
+                                    Specific subcategories like Bakery, Programming, etc.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle parent selection changing level dynamically
+        document.getElementById('parentId')?.addEventListener('change', function() {
+            const parentSelect = this;
+            const selectedOption = parentSelect.options[parentSelect.selectedIndex];
+
+            if (selectedOption.value) {
+                // Update level display based on parent
+                console.log('Parent selected, would update level display');
+            }
+        });
+    </script>
+</body>
+</html>
