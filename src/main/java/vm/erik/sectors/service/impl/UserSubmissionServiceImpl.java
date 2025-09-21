@@ -8,6 +8,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import vm.erik.sectors.exceptions.SubmissionNotFoundException;
+import vm.erik.sectors.exceptions.UserNotFoundException;
 import vm.erik.sectors.model.Sector;
 import vm.erik.sectors.model.User;
 import vm.erik.sectors.model.UserSubmission;
@@ -256,5 +259,93 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
 
         updateSubmission(currentUser, id, submission, selectedSectors);
         return "redirect:/user/submission/" + id;
+    }
+
+    @Override
+    public String handleSubmissionStatusToggle(Long submissionId, Authentication authentication) {
+        User currentUser = userService.getCurrentUser(authentication);
+        if (currentUser == null) {
+            throw new UserNotFoundException("User not found");
+        }
+
+        UserSubmission submission = getUserSubmission(currentUser, submissionId);
+        if (submission == null) {
+            throw new SubmissionNotFoundException("Submission not found or access denied");
+        }
+
+        submission.setIsActive(!submission.getIsActive());
+        userSubmissionRepository.save(submission);
+
+        return "redirect:/user/submissions";
+    }
+
+    @Override
+    public String handleViewSubmissions(Model model, Authentication authentication) {
+        User currentUser = userService.getCurrentUser(authentication);
+        if (currentUser == null) {
+            throw new UserNotFoundException("User not found");
+        }
+
+        List<UserSubmission> submissions = getUserSubmissions(currentUser);
+
+        model.addAttribute("user", currentUser);
+        model.addAttribute("submissions", submissions);
+
+        return "user/submissions";
+    }
+
+    @Override
+    public String handleViewSubmission(Long id, Model model, Authentication authentication) {
+        User currentUser = userService.getCurrentUser(authentication);
+        if (currentUser == null) {
+            throw new UserNotFoundException("User not found");
+        }
+
+        UserSubmission submission = getUserSubmission(currentUser, id);
+        if (submission == null) {
+            throw new SubmissionNotFoundException("Submission not found");
+        }
+
+        model.addAttribute("user", currentUser);
+        model.addAttribute("submission", submission);
+        model.addAttribute("sectorHierarchy", sectorService.getAllSectorsHierarchy());
+        model.addAttribute("mostSpecificSectors", getMostSpecificSelectedSectors(submission));
+
+        return "user/submission-details";
+    }
+
+    @Override
+    public String handleNewSubmissionForm(Model model, Authentication authentication) {
+        User currentUser = userService.getCurrentUser(authentication);
+        if (currentUser == null) {
+            throw new UserNotFoundException("User not found");
+        }
+
+        UserSubmission submission = new UserSubmission();
+
+        model.addAttribute("user", currentUser);
+        model.addAttribute("submission", submission);
+        model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
+
+        return "user/submission-form";
+    }
+
+    @Override
+    public String handleEditSubmissionForm(Long id, Model model, Authentication authentication) {
+        User currentUser = userService.getCurrentUser(authentication);
+        if (currentUser == null) {
+            throw new UserNotFoundException("User not found");
+        }
+
+        UserSubmission submission = getUserSubmission(currentUser, id);
+        if (submission == null) {
+            throw new SubmissionNotFoundException("Submission not found");
+        }
+
+        model.addAttribute("user", currentUser);
+        model.addAttribute("submission", submission);
+        model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
+
+        return "user/submission-form";
     }
 }

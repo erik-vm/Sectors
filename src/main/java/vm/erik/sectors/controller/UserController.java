@@ -8,9 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import vm.erik.sectors.model.User;
 import vm.erik.sectors.model.UserSubmission;
-import vm.erik.sectors.service.SectorService;
 import vm.erik.sectors.service.UserService;
 import vm.erik.sectors.service.UserSubmissionService;
 
@@ -23,41 +21,20 @@ public class UserController {
 
     private final UserService userService;
     private final UserSubmissionService userSubmissionService;
-    private final SectorService sectorService;
 
     @GetMapping
     public String userDashboard(Model model, Authentication authentication) {
-        User currentUser = userService.getCurrentUser(authentication);
-        List<UserSubmission> recentSubmissions = userSubmissionService.getUserSubmissions(currentUser, 5);
-
-        model.addAttribute("user", currentUser);
-        model.addAttribute("recentSubmissions", recentSubmissions);
-        model.addAttribute("totalSubmissions", userSubmissionService.getUserSubmissionsCount(currentUser));
-
-        return "user/dashboard";
+        return userService.handleUserDashboard(model, authentication);
     }
 
     @GetMapping("/submissions")
     public String viewSubmissions(Model model, Authentication authentication) {
-        User currentUser = userService.getCurrentUser(authentication);
-        List<UserSubmission> submissions = userSubmissionService.getUserSubmissions(currentUser);
-
-        model.addAttribute("user", currentUser);
-        model.addAttribute("submissions", submissions);
-
-        return "user/submissions";
+        return userSubmissionService.handleViewSubmissions(model, authentication);
     }
 
     @GetMapping("/submission/new")
     public String newSubmissionForm(Model model, Authentication authentication) {
-        User currentUser = userService.getCurrentUser(authentication);
-        UserSubmission submission = new UserSubmission();
-
-        model.addAttribute("user", currentUser);
-        model.addAttribute("submission", submission);
-        model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
-
-        return "user/submission-form";
+        return userSubmissionService.handleNewSubmissionForm(model, authentication);
     }
 
     @PostMapping("/submission/new")
@@ -73,35 +50,12 @@ public class UserController {
 
     @GetMapping("/submission/{id}")
     public String viewSubmission(@PathVariable Long id, Model model, Authentication authentication) {
-        User currentUser = userService.getCurrentUser(authentication);
-        UserSubmission submission = userSubmissionService.getUserSubmission(currentUser, id);
-
-        if (submission == null) {
-            return "redirect:/user/submissions?error=notfound";
-        }
-
-        model.addAttribute("user", currentUser);
-        model.addAttribute("submission", submission);
-        model.addAttribute("sectorHierarchy", sectorService.getAllSectorsHierarchy());
-        model.addAttribute("mostSpecificSectors", userSubmissionService.getMostSpecificSelectedSectors(submission));
-
-        return "user/submission-details";
+        return userSubmissionService.handleViewSubmission(id, model, authentication);
     }
 
     @GetMapping("/submission/{id}/edit")
     public String editSubmissionForm(@PathVariable Long id, Model model, Authentication authentication) {
-        User currentUser = userService.getCurrentUser(authentication);
-        UserSubmission submission = userSubmissionService.getUserSubmission(currentUser, id);
-
-        if (submission == null) {
-            return "redirect:/user/submissions?error=notfound";
-        }
-
-        model.addAttribute("user", currentUser);
-        model.addAttribute("submission", submission);
-        model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
-
-        return "user/submission-form";
+        return userSubmissionService.handleEditSubmissionForm(id, model, authentication);
     }
 
     @PostMapping("/submission/{id}/edit")
@@ -118,11 +72,7 @@ public class UserController {
 
     @GetMapping("/profile")
     public String viewProfile(Model model, Authentication authentication) {
-        User currentUser = userService.getCurrentUser(authentication);
-
-        model.addAttribute("user", currentUser);
-
-        return "user/profile";
+        return userService.handleViewProfile(model, authentication);
     }
 
     @PostMapping("/profile/update")
@@ -131,17 +81,7 @@ public class UserController {
                                 @RequestParam String email,
                                 Authentication authentication,
                                 RedirectAttributes redirectAttributes) {
-
-        User currentUser = userService.getCurrentUser(authentication);
-
-        try {
-            userService.updateUserProfile(currentUser, firstName, lastName, email);
-            redirectAttributes.addFlashAttribute("successMessage", "Profile updated successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error updating profile: " + e.getMessage());
-        }
-
-        return "redirect:/user/profile";
+        return userService.handleUpdateProfile(firstName, lastName, email, authentication, redirectAttributes);
     }
 
     @PostMapping("/profile/password")
@@ -150,52 +90,11 @@ public class UserController {
                                  @RequestParam String confirmPassword,
                                  Authentication authentication,
                                  RedirectAttributes redirectAttributes) {
-
-        if (!newPassword.equals(confirmPassword)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "New passwords do not match!");
-            return "redirect:/user/profile";
-        }
-
-        User currentUser = userService.getCurrentUser(authentication);
-
-        if (currentPassword.equals(newPassword)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "New password must be different from your current password!");
-            return "redirect:/user/profile";
-        }
-
-        try {
-            userService.changePassword(currentUser, currentPassword, newPassword);
-            redirectAttributes.addFlashAttribute("successMessage", "Password changed successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error changing password: " + e.getMessage());
-        }
-
-        return "redirect:/user/profile";
+        return userService.handleChangePassword(currentPassword, newPassword, confirmPassword, authentication, redirectAttributes);
     }
 
-    @PostMapping("/submission/{id}/deactivate")
-    public String deactivateSubmission(@PathVariable Long id, Authentication authentication, RedirectAttributes redirectAttributes) {
-        try {
-            User currentUser = userService.getCurrentUser(authentication);
-            userSubmissionService.deactivateSubmission(currentUser, id);
-            redirectAttributes.addFlashAttribute("successMessage", "Submission deactivated successfully.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error deactivating submission: " + e.getMessage());
-        }
-
-        return "redirect:/user/submissions";
-    }
-
-    @PostMapping("/submission/{id}/activate")
-    public String activateSubmission(@PathVariable Long id, Authentication authentication, RedirectAttributes redirectAttributes) {
-        try {
-            User currentUser = userService.getCurrentUser(authentication);
-            userSubmissionService.activateSubmission(currentUser, id);
-            redirectAttributes.addFlashAttribute("successMessage", "Submission activated successfully.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error activating submission: " + e.getMessage());
-        }
-
-        return "redirect:/user/submissions";
+    @PostMapping("/submission/{id}/toggle")
+    public String toggleSubmissionStatus(@PathVariable Long id, Authentication authentication) {
+        return userSubmissionService.handleSubmissionStatusToggle(id, authentication);
     }
 }
