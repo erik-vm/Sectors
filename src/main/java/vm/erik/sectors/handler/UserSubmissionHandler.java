@@ -4,6 +4,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import vm.erik.sectors.exceptions.SubmissionNotFoundException;
 import vm.erik.sectors.model.Sector;
 import vm.erik.sectors.model.User;
 import vm.erik.sectors.model.UserSubmission;
@@ -12,13 +13,11 @@ import vm.erik.sectors.repository.UserRepository;
 import vm.erik.sectors.repository.UserSubmissionRepository;
 import vm.erik.sectors.service.SectorService;
 import vm.erik.sectors.validation.ValidationService;
-import vm.erik.sectors.exceptions.SubmissionNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Set;
-
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class UserSubmissionHandler {
@@ -30,7 +29,7 @@ public class UserSubmissionHandler {
     private final ValidationService validationService;
 
     public UserSubmissionHandler(UserSubmissionRepository userSubmissionRepository, UserRepository userRepository,
-                               SectorRepository sectorRepository, SectorService sectorService, ValidationService validationService) {
+                                 SectorRepository sectorRepository, SectorService sectorService, ValidationService validationService) {
         this.userSubmissionRepository = userSubmissionRepository;
         this.userRepository = userRepository;
         this.sectorRepository = sectorRepository;
@@ -118,7 +117,7 @@ public class UserSubmissionHandler {
     }
 
     public String handleSubmissionCreation(UserSubmission submission, BindingResult result,
-                                         List<Long> selectedSectors, Authentication authentication, Model model) {
+                                           List<Long> selectedSectors, Authentication authentication, Model model) {
 
         if (validationService.handleValidationErrors(result, model, submission, "submission")) {
             model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());
@@ -131,7 +130,7 @@ public class UserSubmissionHandler {
     }
 
     public String handleSubmissionUpdate(Long id, UserSubmission submission, BindingResult result,
-                                       List<Long> selectedSectors, Authentication authentication, Model model) {
+                                         List<Long> selectedSectors, Authentication authentication, Model model) {
 
         if (validationService.handleValidationErrors(result, model, submission, "submission")) {
             model.addAttribute("sectors", sectorService.getActiveSectorsHierarchy());

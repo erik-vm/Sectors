@@ -16,7 +16,8 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false) @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@Builder
 @ToString(exclude = {"user", "selectedSectors"})
 public class UserSubmission extends BaseEntity {
 

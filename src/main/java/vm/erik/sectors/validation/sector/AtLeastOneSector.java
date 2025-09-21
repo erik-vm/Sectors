@@ -2,7 +2,6 @@ package vm.erik.sectors.validation.sector;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import vm.erik.sectors.validation.AtLeastOneSectorValidator;
 
 import java.lang.annotation.*;
 

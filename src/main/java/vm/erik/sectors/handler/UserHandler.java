@@ -1,15 +1,14 @@
 package vm.erik.sectors.handler;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
+import vm.erik.sectors.exceptions.PasswordValidationException;
 import vm.erik.sectors.model.User;
+import vm.erik.sectors.repository.PersonRepository;
 import vm.erik.sectors.repository.UserRepository;
 import vm.erik.sectors.repository.UserSubmissionRepository;
-import vm.erik.sectors.exceptions.UserNotFoundException;
-import vm.erik.sectors.exceptions.PasswordValidationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import vm.erik.sectors.repository.PersonRepository;
 
 import java.time.LocalDateTime;
 
@@ -22,7 +21,7 @@ public class UserHandler {
     private final PersonRepository personRepository;
 
     public UserHandler(UserRepository userRepository, UserSubmissionRepository userSubmissionRepository,
-                      PasswordEncoder passwordEncoder, PersonRepository personRepository) {
+                       PasswordEncoder passwordEncoder, PersonRepository personRepository) {
         this.userRepository = userRepository;
         this.userSubmissionRepository = userSubmissionRepository;
         this.passwordEncoder = passwordEncoder;
@@ -46,14 +45,14 @@ public class UserHandler {
     }
 
     public String handleUpdateProfile(String firstName, String lastName, String email,
-                                    Authentication authentication) {
+                                      Authentication authentication) {
         User currentUser = getCurrentUser(authentication);
         updateUserProfile(currentUser, firstName, lastName, email);
         return "redirect:/user/profile?success=profile-updated";
     }
 
     public String handleChangePassword(String currentPassword, String newPassword, String confirmPassword,
-                                     Authentication authentication) {
+                                       Authentication authentication) {
         User currentUser = getCurrentUser(authentication);
         validatePasswordChange(currentPassword, newPassword, confirmPassword, currentUser);
         changePassword(currentUser, currentPassword, newPassword);

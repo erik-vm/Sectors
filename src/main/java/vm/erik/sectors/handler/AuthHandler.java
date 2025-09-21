@@ -9,14 +9,13 @@ import vm.erik.sectors.dto.RegisterForm;
 import vm.erik.sectors.enums.RoleName;
 import vm.erik.sectors.model.Person;
 import vm.erik.sectors.model.Role;
-import vm.erik.sectors.model.User;
 import vm.erik.sectors.repository.PersonRepository;
 import vm.erik.sectors.repository.RoleRepository;
 import vm.erik.sectors.repository.UserRepository;
+import vm.erik.sectors.service.impl.AuthServiceImpl;
 import vm.erik.sectors.validation.ValidationService;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 
 @Component
 public class AuthHandler {
@@ -28,8 +27,8 @@ public class AuthHandler {
     private final ValidationService validationService;
 
     public AuthHandler(UserRepository userRepository, PersonRepository personRepository,
-                      RoleRepository roleRepository, PasswordEncoder passwordEncoder,
-                      ValidationService validationService) {
+                       RoleRepository roleRepository, PasswordEncoder passwordEncoder,
+                       ValidationService validationService) {
         this.userRepository = userRepository;
         this.personRepository = personRepository;
         this.roleRepository = roleRepository;
@@ -48,19 +47,7 @@ public class AuthHandler {
 
         Role userRole = roleRepository.findByRoleName(RoleName.USER);
 
-        User user = User.builder()
-                .username(registerForm.getUsername())
-                .email(registerForm.getEmail())
-                .password(passwordEncoder.encode(registerForm.getPassword()))
-                .person(person)
-                .roles(Collections.singleton(userRole))
-                .isActive(true)
-                .isLocked(false)
-                .build();
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
-
-        userRepository.save(user);
+        AuthServiceImpl.buildUser(registerForm, person, userRole, passwordEncoder, userRepository);
     }
 
     public String handleUserRegistration(RegisterForm registerForm, BindingResult result, Model model) {

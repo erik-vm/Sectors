@@ -25,7 +25,7 @@ class ValidationAdvice {
 
     @ExceptionHandler(RuntimeException.class)
     public String handleRuntimeException(RuntimeException ex, Model model, HttpServletRequest request) {
-        // Check if this is a registration-related request
+
         if (request.getRequestURI().contains("/auth/register")) {
             ValidationErrors validationErrors = new ValidationErrors();
             validationService.addCustomError(validationErrors, ex.getMessage());

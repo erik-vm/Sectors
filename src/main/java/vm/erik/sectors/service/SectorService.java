@@ -22,17 +22,11 @@ public interface SectorService {
 
     Long getSectorUsageCount(Long sectorId);
 
-    List<Sector> getActiveSectorsForUserSelection();
 
     List<Sector> getActiveSectorsHierarchy();
 
-    /**
-     * Handles sector creation with validation - returns view name to render
-     */
     String handleSectorCreation(Sector sector, BindingResult result, Long parentId, Model model);
 
-    /**
-     * Handles sector update with validation - returns view name to render
-     */
+
     String handleSectorUpdate(Long id, Sector sector, BindingResult result, Long parentId, Model model);
 }

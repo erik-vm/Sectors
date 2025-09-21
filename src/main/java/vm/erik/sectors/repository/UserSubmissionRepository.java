@@ -19,5 +19,4 @@ public interface UserSubmissionRepository extends JpaRepository<UserSubmission, 
 
     long countByUser(User user);
 
-    List<UserSubmission> findByUserAndIsActiveTrueOrderByCreatedAtDesc(User user);
 }

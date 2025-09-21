@@ -1,7 +1,6 @@
 package vm.erik.sectors.service.impl;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -77,10 +76,6 @@ public class SectorServiceImpl implements SectorService {
         return sectorRepository.countUserSubmissionsBySectorId(sectorId);
     }
 
-    @Override
-    public List<Sector> getActiveSectorsForUserSelection() {
-        return sectorRepository.findByIsActiveTrueOrderByLevelAscNameAsc();
-    }
 
     @Override
     public List<Sector> getActiveSectorsHierarchy() {

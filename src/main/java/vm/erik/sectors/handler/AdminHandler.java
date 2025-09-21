@@ -1,28 +1,27 @@
 package vm.erik.sectors.handler;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import vm.erik.sectors.dto.AdminStatsDto;
+import vm.erik.sectors.dto.UserDetailsDto;
+import vm.erik.sectors.exceptions.PasswordValidationException;
+import vm.erik.sectors.exceptions.UserNotFoundException;
+import vm.erik.sectors.mapper.UserMapper;
 import vm.erik.sectors.model.Sector;
 import vm.erik.sectors.model.User;
 import vm.erik.sectors.model.UserSubmission;
-import vm.erik.sectors.service.SectorService;
-import vm.erik.sectors.service.UserSubmissionService;
-import vm.erik.sectors.dto.AdminStatsDto;
-import vm.erik.sectors.dto.UserDetailsDto;
+import vm.erik.sectors.repository.PersonRepository;
 import vm.erik.sectors.repository.UserRepository;
 import vm.erik.sectors.repository.UserSubmissionRepository;
-import vm.erik.sectors.repository.PersonRepository;
-import vm.erik.sectors.mapper.UserMapper;
-import vm.erik.sectors.exceptions.UserNotFoundException;
-import vm.erik.sectors.exceptions.PasswordValidationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import vm.erik.sectors.service.SectorService;
+import vm.erik.sectors.service.UserSubmissionService;
 
 import java.time.LocalDateTime;
-
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class AdminHandler {
@@ -36,9 +35,9 @@ public class AdminHandler {
     private final PersonRepository personRepository;
 
     public AdminHandler(UserSubmissionService userSubmissionService,
-                       SectorService sectorService, UserRepository userRepository,
-                       UserSubmissionRepository userSubmissionRepository, UserMapper userMapper,
-                       PasswordEncoder passwordEncoder, PersonRepository personRepository) {
+                        SectorService sectorService, UserRepository userRepository,
+                        UserSubmissionRepository userSubmissionRepository, UserMapper userMapper,
+                        PasswordEncoder passwordEncoder, PersonRepository personRepository) {
         this.userSubmissionService = userSubmissionService;
         this.sectorService = sectorService;
         this.userRepository = userRepository;
@@ -240,7 +239,7 @@ public class AdminHandler {
     }
 
     public String handleUpdateProfile(String firstName, String lastName, String email,
-                                    Authentication authentication, RedirectAttributes redirectAttributes) {
+                                      Authentication authentication, RedirectAttributes redirectAttributes) {
         User currentAdmin = getCurrentUser(authentication);
 
         try {
@@ -254,7 +253,7 @@ public class AdminHandler {
     }
 
     public String handleChangePassword(String currentPassword, String newPassword, String confirmPassword,
-                                     Authentication authentication, RedirectAttributes redirectAttributes) {
+                                       Authentication authentication, RedirectAttributes redirectAttributes) {
         if (!newPassword.equals(confirmPassword)) {
             redirectAttributes.addFlashAttribute("errorMessage", "New passwords do not match!");
             return "redirect:/admin/profile";

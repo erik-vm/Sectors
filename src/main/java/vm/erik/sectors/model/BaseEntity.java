@@ -3,10 +3,8 @@ package vm.erik.sectors.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @MappedSuperclass
 @Getter

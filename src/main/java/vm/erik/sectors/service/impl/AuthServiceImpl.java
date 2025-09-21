@@ -7,16 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import vm.erik.sectors.dto.RegisterForm;
-import vm.erik.sectors.enums.RoleName;
+import vm.erik.sectors.handler.AuthHandler;
 import vm.erik.sectors.model.Person;
 import vm.erik.sectors.model.Role;
 import vm.erik.sectors.model.User;
-import vm.erik.sectors.repository.PersonRepository;
-import vm.erik.sectors.repository.RoleRepository;
 import vm.erik.sectors.repository.UserRepository;
 import vm.erik.sectors.service.AuthService;
-import vm.erik.sectors.handler.AuthHandler;
-import vm.erik.sectors.validation.ValidationService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -26,38 +22,15 @@ import java.util.Collections;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
-    private final PersonRepository personRepository;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final ValidationService validationService;
     private final AuthHandler authHandler;
 
-    public AuthServiceImpl(UserRepository userRepository, PersonRepository personRepository,
-                           RoleRepository roleRepository, PasswordEncoder passwordEncoder,
-                           ValidationService validationService, AuthHandler authHandler) {
+    public AuthServiceImpl(UserRepository userRepository, AuthHandler authHandler) {
         this.userRepository = userRepository;
-        this.personRepository = personRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.validationService = validationService;
         this.authHandler = authHandler;
     }
 
 
-    @Override
-    public void registerUser(RegisterForm registerForm) {
-        // Validation is handled by annotations and ValidationService
-
-        Person person = Person.builder()
-                .firstName(registerForm.getFirstName())
-                .lastName(registerForm.getLastName())
-                .build();
-        person.setCreatedAt(LocalDateTime.now());
-        person.setUpdatedAt(LocalDateTime.now());
-        person = personRepository.save(person);
-
-        Role userRole = roleRepository.findByRoleName((RoleName.USER));
-
+    public static void buildUser(RegisterForm registerForm, Person person, Role userRole, PasswordEncoder passwordEncoder, UserRepository userRepository) {
         User user = User.builder()
                 .username(registerForm.getUsername())
                 .email(registerForm.getEmail())

@@ -15,10 +15,10 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true,  callSuper = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 @ToString(exclude = "users")
 @Builder
-public class Role extends BaseEntity{
+public class Role extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role_name", nullable = false, unique = true, length = 20)

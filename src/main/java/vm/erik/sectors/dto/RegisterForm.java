@@ -4,8 +4,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import vm.erik.sectors.validation.password.PasswordMatches;
 import vm.erik.sectors.validation.email.UniqueEmail;
+import vm.erik.sectors.validation.password.PasswordMatches;
 import vm.erik.sectors.validation.username.UniqueUsername;
 
 @Data

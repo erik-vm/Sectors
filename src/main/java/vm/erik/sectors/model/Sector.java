@@ -6,7 +6,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "sectors",
@@ -18,7 +21,7 @@ import java.util.*;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @ToString(exclude = {"parent", "children", "userSubmissions"})
 @Builder
-public class Sector  extends BaseEntity{
+public class Sector extends BaseEntity {
 
 
     @Column(name = "name", nullable = false)

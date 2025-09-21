@@ -10,13 +10,7 @@ import java.util.List;
 
 public interface AdminService {
 
-    AdminStatsDto getAdminStats();
 
-    List<UserDetailsDto> getAllUsers();
-
-    void blockStatusToggler(Long userId);
-
-    UserDetailsDto getUserDetails(Long userId);
 
     long getTotalSubmissionsCount();
 

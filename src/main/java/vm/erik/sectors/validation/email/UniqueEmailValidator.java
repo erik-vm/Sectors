@@ -17,7 +17,7 @@ public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, St
     @Override
     public boolean isValid(String email, ConstraintValidatorContext context) {
         if (email == null || email.trim().isEmpty()) {
-            return true; // Let @NotBlank handle empty validation
+            return true;
         }
 
         return !authService.isEmailTaken(email);

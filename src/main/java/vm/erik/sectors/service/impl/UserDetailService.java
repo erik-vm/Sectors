@@ -12,7 +12,6 @@ import vm.erik.sectors.repository.UserRepository;
 import java.util.stream.Collectors;
 
 
-
 @Service
 @Transactional
 public class UserDetailService implements UserDetailsService {

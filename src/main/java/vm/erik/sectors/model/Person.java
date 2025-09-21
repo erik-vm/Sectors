@@ -1,7 +1,10 @@
 package vm.erik.sectors.model;
 
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -25,6 +28,6 @@ public class Person extends BaseEntity {
     @NotBlank(message = "Last name is required")
     private String lastName;
 
-    @OneToOne(mappedBy = "person", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "person")
     private User user;
 }

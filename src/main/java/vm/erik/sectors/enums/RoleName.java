@@ -14,10 +14,6 @@ public enum RoleName {
         this.displayName = displayName;
     }
 
-    public String getAuthority() {
-        return "ROLE_" + this.name();
-    }
-
     public boolean isAdmin() {
         return this == ADMIN;
     }

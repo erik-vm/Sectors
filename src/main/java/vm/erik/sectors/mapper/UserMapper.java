@@ -14,13 +14,11 @@ import java.util.stream.Collectors;
 @Component
 public class UserMapper {
 
-    public UserDetailsDto toUserDetailsDTO (User user){
-        // Map all submissions
+    public UserDetailsDto toUserDetailsDTO(User user) {
         List<SubmissionSummaryDto> submissions = user.getSubmissions() != null ?
                 user.getSubmissions().stream()
                         .map(this::toSubmissionSummaryDto)
                         .collect(Collectors.toList()) : List.of();
-
 
 
         return UserDetailsDto.builder()

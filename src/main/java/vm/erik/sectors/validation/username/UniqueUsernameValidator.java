@@ -17,7 +17,7 @@ public class UniqueUsernameValidator implements ConstraintValidator<UniqueUserna
     @Override
     public boolean isValid(String username, ConstraintValidatorContext context) {
         if (username == null || username.trim().isEmpty()) {
-            return true; // Let @NotBlank handle empty validation
+            return true;
         }
 
         return !authService.isUsernameTaken(username);

@@ -13,7 +13,7 @@ public class PasswordMatchesValidator implements ConstraintValidator<PasswordMat
     @Override
     public boolean isValid(RegisterForm registerForm, ConstraintValidatorContext context) {
         if (registerForm.getPassword() == null || registerForm.getConfirmPassword() == null) {
-            return true; // Let other validators handle null values
+            return true;
         }
 
         return registerForm.getPassword().equals(registerForm.getConfirmPassword());
