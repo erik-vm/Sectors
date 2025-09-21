@@ -1,0 +1,154 @@
+/* =============================================================================
+   Sectors Management System - Forms Styles
+   Specialized styles for forms, submissions, and interactive components
+   ============================================================================= */
+
+/* Form Submission Components */
+.sector-checkbox {
+    transition: all 0.2s ease;
+}
+
+.sector-checkbox:hover {
+    background-color: #f8f9fa;
+}
+
+.terms-checkbox {
+    cursor: pointer;
+}
+
+.terms-checkbox:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.terms-link {
+    color: #1318C8;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.terms-link:hover {
+    color: #0f14a8;
+}
+
+/* Sector Selection */
+.sector-selection-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 1rem;
+    background-color: #ffffff;
+}
+
+.sector-category {
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+
+.sector-header {
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-radius: 4px;
+}
+
+.sector-header:hover {
+    background-color: #e9ecef;
+}
+
+.sector-content {
+    padding: 0.5rem 0.75rem 0.75rem;
+    background-color: #ffffff;
+    border-top: 1px solid #e9ecef;
+}
+
+.collapse-icon {
+    transition: transform 0.2s ease;
+}
+
+.collapse-icon[aria-expanded="true"] {
+    transform: rotate(180deg);
+}
+
+/* Authentication Forms */
+.auth-container {
+    max-width: 400px;
+    margin: 2rem auto;
+}
+
+.auth-card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.nav-pills .nav-link {
+    border-radius: 4px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.nav-pills .nav-link.active {
+    background-color: #1318C8;
+    color: #ffffff;
+}
+
+.form-floating .form-control {
+    border-radius: 4px;
+}
+
+.btn-auth {
+    border-radius: 4px;
+    padding: 12px;
+    font-weight: 600;
+    background-color: #1318C8;
+    border: none;
+    color: #ffffff;
+}
+
+.btn-auth:hover {
+    background-color: #0f14a8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(19, 24, 200, 0.3);
+    color: #ffffff;
+}
+
+/* Form Validation */
+.was-validated .form-control:valid {
+    border-color: #28a745;
+}
+
+.was-validated .form-control:invalid {
+    border-color: #dc3545;
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.valid-feedback {
+    color: #28a745;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Responsive Form Adjustments */
+@media (max-width: 768px) {
+    .auth-container {
+        margin: 1rem auto;
+        max-width: 100%;
+        padding: 0 1rem;
+    }
+
+    .sector-selection-container {
+        max-height: 300px;
+    }
+
+    .form-floating .form-control {
+        font-size: 14px;
+    }
+}

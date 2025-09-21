@@ -7,7 +7,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vm.erik.sectors.exceptions.PasswordValidationException;
 import vm.erik.sectors.exceptions.UserNotFoundException;
 import vm.erik.sectors.model.User;
@@ -112,43 +111,27 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String handleUpdateProfile(String firstName, String lastName, String email,
-                                    Authentication authentication, RedirectAttributes redirectAttributes) {
+                                    Authentication authentication) {
         User currentUser = getCurrentUser(authentication);
         if (currentUser == null) {
             throw new UserNotFoundException("User not found");
         }
 
-        try {
-            updateUserProfile(currentUser, firstName, lastName, email);
-            redirectAttributes.addFlashAttribute("successMessage", "Profile updated successfully!");
-        } catch (Exception e) {
-            log.error("Error updating profile for user {}: {}", currentUser.getUsername(), e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("errorMessage", "Error updating profile: " + e.getMessage());
-        }
-
-        return "redirect:/user/profile";
+        updateUserProfile(currentUser, firstName, lastName, email);
+        return "redirect:/user/profile?success=profile-updated";
     }
 
     @Override
     public String handleChangePassword(String currentPassword, String newPassword, String confirmPassword,
-                                     Authentication authentication, RedirectAttributes redirectAttributes) {
+                                     Authentication authentication) {
         User currentUser = getCurrentUser(authentication);
         if (currentUser == null) {
             throw new UserNotFoundException("User not found");
         }
 
-        try {
-            validatePasswordChange(currentPassword, newPassword, confirmPassword, currentUser);
-            changePassword(currentUser, currentPassword, newPassword);
-            redirectAttributes.addFlashAttribute("successMessage", "Password changed successfully!");
-        } catch (PasswordValidationException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("Error changing password for user {}: {}", currentUser.getUsername(), e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("errorMessage", "Error changing password: " + e.getMessage());
-        }
-
-        return "redirect:/user/profile";
+        validatePasswordChange(currentPassword, newPassword, confirmPassword, currentUser);
+        changePassword(currentUser, currentPassword, newPassword);
+        return "redirect:/user/profile?success=password-changed";
     }
 
     private void validatePasswordChange(String currentPassword, String newPassword, String confirmPassword, User user) {
@@ -163,5 +146,10 @@ public class UserServiceImpl implements UserService {
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new PasswordValidationException("Current password is incorrect!");
         }
+    }
+
+    @Override
+    public String handleViewSettings(Model model, Authentication authentication) {
+        return handleViewProfile(model, authentication);
     }
 }

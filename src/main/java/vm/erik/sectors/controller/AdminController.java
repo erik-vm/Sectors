@@ -25,17 +25,22 @@ public class AdminController {
     private final UserService userService;
     private final UserSubmissionService userSubmissionService;
     private final SectorService sectorService;
+    private final AuthController authController;
 
     public AdminController(AdminService adminService, UserService userService,
-                           UserSubmissionService userSubmissionService, SectorService sectorService) {
+                           UserSubmissionService userSubmissionService, SectorService sectorService,
+                           AuthController authController) {
         this.adminService = adminService;
         this.userService = userService;
         this.userSubmissionService = userSubmissionService;
         this.sectorService = sectorService;
+        this.authController = authController;
     }
 
     @GetMapping
     public String adminDashboard(Model model, Authentication authentication) {
+        authController.addUserRoleToModel(model, authentication);
+
         // Get admin statistics
         var stats = adminService.getAdminStats();
         model.addAttribute("stats", stats);
@@ -88,6 +93,7 @@ public class AdminController {
     // Admin view for other users' submissions (read-only)
     @GetMapping("/view-submission/{submissionId}")
     public String viewUserSubmission(@PathVariable Long submissionId, Model model, Authentication authentication) {
+        authController.addUserRoleToModel(model, authentication);
         try {
             // Get the submission directly by ID (admin can view any submission)
             UserSubmission submission = userSubmissionService.getSubmissionById(submissionId);
@@ -108,14 +114,16 @@ public class AdminController {
 
     // Sector Management
     @GetMapping("/sectors")
-    public String manageSectors(Model model) {
+    public String manageSectors(Model model, Authentication authentication) {
+        authController.addUserRoleToModel(model, authentication);
         List<Sector> allSectors = sectorService.getAllSectorsHierarchy();
         model.addAttribute("sectors", allSectors);
         return "admin/sectors";
     }
 
     @GetMapping("/sector/new")
-    public String newSectorForm(@RequestParam(required = false) Long parentId, Model model) {
+    public String newSectorForm(@RequestParam(required = false) Long parentId, Model model, Authentication authentication) {
+        authController.addUserRoleToModel(model, authentication);
         Sector sector = new Sector();
 
         if (parentId != null) {
@@ -144,7 +152,8 @@ public class AdminController {
     }
 
     @GetMapping("/sector/{id}/edit")
-    public String editSectorForm(@PathVariable Long id, Model model) {
+    public String editSectorForm(@PathVariable Long id, Model model, Authentication authentication) {
+        authController.addUserRoleToModel(model, authentication);
         Sector sector = sectorService.getSectorById(id);
         if (sector == null) {
             return "redirect:/admin/sectors?error=notfound";
@@ -189,7 +198,8 @@ public class AdminController {
     }
 
     @GetMapping("/sector/{id}")
-    public String viewSector(@PathVariable Long id, Model model) {
+    public String viewSector(@PathVariable Long id, Model model, Authentication authentication) {
+        authController.addUserRoleToModel(model, authentication);
         Sector sector = sectorService.getSectorById(id);
         if (sector == null) {
             return "redirect:/admin/sectors?error=notfound";
@@ -203,6 +213,7 @@ public class AdminController {
 
     @GetMapping("/profile")
     public String viewProfile(Model model, Authentication authentication) {
+        authController.addUserRoleToModel(model, authentication);
         User currentAdmin = userService.getCurrentUser(authentication);
         model.addAttribute("user", currentAdmin);
         return "admin/profile";

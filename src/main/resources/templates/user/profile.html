@@ -1,55 +1,36 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - Sectors Management System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .bg-gradient-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .profile-card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            color: white;
-            margin: 0 auto 1rem;
-        }
-        .form-floating > .form-control:focus ~ label,
-        .form-floating > .form-control:not(:placeholder-shown) ~ label {
-            opacity: 0.65;
-            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
-        }
-    </style>
 </head>
-<body class="bg-light">
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary shadow">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" th:href="@{/}">
-                <i class="fas fa-industry me-2"></i>Sectors Management
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link text-white" th:href="@{/user}">
-                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
-                </a>
-            </div>
-        </div>
-    </nav>
+<body>
+    <div th:fragment="content">
+        <style>
+            .profile-card {
+                border: none;
+                border-radius: 15px;
+                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            }
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2.5rem;
+                color: white;
+                margin: 0 auto 1rem;
+            }
+            .form-floating > .form-control:focus ~ label,
+            .form-floating > .form-control:not(:placeholder-shown) ~ label {
+                opacity: 0.65;
+                transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+            }
+        </style>
 
-    <div class="container py-4">
+        <div class="container py-4">
         <!-- Page Header -->
         <div class="row mb-4">
             <div class="col-12">
@@ -260,10 +241,9 @@
                 </form>
             </div>
         </div>
-    </div>
+        </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+        <script>
         // Password confirmation validation
         document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
             const currentPassword = document.getElementById('currentPassword').value;
@@ -314,6 +294,7 @@
                 this.classList.remove('is-invalid');
             }
         });
-    </script>
+        </script>
+    </div>
 </body>
 </html>

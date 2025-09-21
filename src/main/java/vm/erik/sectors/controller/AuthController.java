@@ -55,4 +55,20 @@ public class AuthController {
     public String loginPage() {
         return "redirect:/auth";
     }
+
+    /**
+     * Add user role to model based on authentication
+     */
+    public void addUserRoleToModel(Model model, Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            if (authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                model.addAttribute("userRole", "ADMIN");
+            } else {
+                model.addAttribute("userRole", "USER");
+            }
+        } else {
+            model.addAttribute("userRole", null);
+        }
+    }
 }

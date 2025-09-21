@@ -2,6 +2,7 @@ package vm.erik.sectors.controller;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class HomeController {
 
     @GetMapping()
-    public String home(Authentication authentication) {
+    public String home(Authentication authentication, Model model) {
         // Redirect to appropriate dashboard based on authentication
         if (authentication != null && authentication.isAuthenticated()) {
             if (authentication.getAuthorities().stream()
@@ -21,6 +22,8 @@ public class HomeController {
             }
         }
 
+        // For unauthenticated users, ensure userRole is null
+        model.addAttribute("userRole", null);
         return "home/index";
     }
 
