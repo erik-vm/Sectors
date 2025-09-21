@@ -17,5 +17,5 @@ public interface AdminService {
 
     UserDetailsDto getUserDetails(Long userId);
 
-    long getTotalAdminCount();
+    long getTotalSubmissionsCount();
 }

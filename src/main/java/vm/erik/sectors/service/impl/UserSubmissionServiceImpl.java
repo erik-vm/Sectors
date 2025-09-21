@@ -10,6 +10,7 @@ import vm.erik.sectors.model.Sector;
 import vm.erik.sectors.model.User;
 import vm.erik.sectors.model.UserSubmission;
 import vm.erik.sectors.repository.SectorRepository;
+import vm.erik.sectors.repository.UserRepository;
 import vm.erik.sectors.repository.UserSubmissionRepository;
 import vm.erik.sectors.service.UserSubmissionService;
 
@@ -26,6 +27,7 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
 
     private final UserSubmissionRepository userSubmissionRepository;
     private final SectorRepository sectorRepository;
+    private final UserRepository userRepository;
 
     @Override
     public List<UserSubmission> getUserSubmissions(User user) {
@@ -40,6 +42,11 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
     @Override
     public UserSubmission getUserSubmission(User user, Long submissionId) {
         return userSubmissionRepository.findByIdAndUser(submissionId, user);
+    }
+
+    @Override
+    public UserSubmission getSubmissionById(Long submissionId) {
+        return userSubmissionRepository.findById(submissionId).orElse(null);
     }
 
     @Override
@@ -176,5 +183,31 @@ public class UserSubmissionServiceImpl implements UserSubmissionService {
             parent = parent.getParent();
         }
         return false;
+    }
+
+    @Override
+    public void deactivateSubmission(User user, Long submissionId) {
+        UserSubmission submission = getUserSubmission(user, submissionId);
+        if (submission == null) {
+            throw new RuntimeException("Submission not found or access denied");
+        }
+
+        submission.setIsActive(false);
+        userSubmissionRepository.save(submission);
+
+
+    }
+
+    @Override
+    public void activateSubmission(User user, Long submissionId) {
+        UserSubmission submission = getUserSubmission(user, submissionId);
+        if (submission == null) {
+            throw new RuntimeException("Submission not found or access denied");
+        }
+
+        submission.setIsActive(true);
+        userSubmissionRepository.save(submission);
+
+
     }
 }

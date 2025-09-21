@@ -1,13 +1,20 @@
 package vm.erik.sectors.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vm.erik.sectors.model.User;
+import vm.erik.sectors.model.UserSubmission;
 import vm.erik.sectors.service.AdminService;
+import vm.erik.sectors.service.SectorService;
 import vm.erik.sectors.service.UserService;
+import vm.erik.sectors.service.UserSubmissionService;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -15,20 +22,31 @@ public class AdminController {
 
     private final AdminService adminService;
     private final UserService userService;
+    private final UserSubmissionService userSubmissionService;
+    private final SectorService sectorService;
 
-    public AdminController(AdminService adminService, UserService userService) {
+    public AdminController(AdminService adminService, UserService userService,
+                          UserSubmissionService userSubmissionService, SectorService sectorService) {
         this.adminService = adminService;
         this.userService = userService;
+        this.userSubmissionService = userSubmissionService;
+        this.sectorService = sectorService;
     }
 
     @GetMapping
-    public String adminDashboard(Model model) {
+    public String adminDashboard(Model model, Authentication authentication) {
         // Get admin statistics
         var stats = adminService.getAdminStats();
         model.addAttribute("stats", stats);
 
-        // Get all users
-        var users = adminService.getAllUsers();
+        // Get current admin user
+        User currentAdmin = userService.getCurrentUser(authentication);
+
+        // Get all users except current admin
+        var allUsers = adminService.getAllUsers();
+        var users = allUsers.stream()
+            .filter(user -> !user.getUsername().equals(currentAdmin.getUsername()))
+            .toList();
         model.addAttribute("users", users);
 
         return "admin/dashboard";
@@ -66,11 +84,31 @@ public class AdminController {
         }
     }
 
+    // Admin view for other users' submissions (read-only)
+    @GetMapping("/view-submission/{submissionId}")
+    public String viewUserSubmission(@PathVariable Long submissionId, Model model, Authentication authentication) {
+        try {
+            // Get the submission directly by ID (admin can view any submission)
+            UserSubmission submission = userSubmissionService.getSubmissionById(submissionId);
+
+            if (submission == null) {
+                return "redirect:/admin?error=submission-not-found";
+            }
+
+            model.addAttribute("submission", submission);
+            model.addAttribute("mostSpecificSectors", userSubmissionService.getMostSpecificSelectedSectors(submission));
+            model.addAttribute("isAdminView", true); // Flag to indicate this is admin viewing user submission
+
+            return "admin/view-user-submission";
+        } catch (Exception e) {
+            return "redirect:/admin?error=access-denied";
+        }
+    }
+
     @GetMapping("/profile")
     public String viewProfile(Model model, Authentication authentication) {
         User currentAdmin = userService.getCurrentUser(authentication);
         model.addAttribute("user", currentAdmin);
-        model.addAttribute("totalAdmins", adminService.getTotalAdminCount());
         return "admin/profile";
     }
 

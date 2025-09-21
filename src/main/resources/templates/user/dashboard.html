@@ -40,6 +40,9 @@
                         <span th:text="${user.person?.firstName + ' ' + user.person?.lastName}">User Name</span>
                     </a>
                     <ul class="dropdown-menu">
+                        <li sec:authorize="hasRole('ADMIN')"><h6 class="dropdown-header">Admin Panel</h6></li>
+                        <li sec:authorize="hasRole('ADMIN')"><a class="dropdown-item" th:href="@{/admin}"><i class="fas fa-tools me-2"></i>Admin Control Panel</a></li>
+                        <li sec:authorize="hasRole('ADMIN')"><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" th:href="@{/user/profile}"><i class="fas fa-user-edit me-2"></i>Profile</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>

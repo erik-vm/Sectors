@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submission Details - Sectors Management System</title>
+    <title>User Submission Details - Admin View</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -14,29 +14,6 @@
             border: none;
             border-radius: 10px;
             box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
-        }
-        .sector-item {
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            padding: 0.5rem 0.75rem;
-            margin: 0.25rem;
-            display: inline-block;
-            border: 1px solid #e9ecef;
-        }
-        .sector-hierarchy {
-            margin-left: 1rem;
-        }
-        .sector-root {
-            font-weight: bold;
-            color: #495057;
-        }
-        .sector-child {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-        .sector-grandchild {
-            color: #868e96;
-            font-size: 0.85rem;
         }
         .sector-badge {
             display: inline-block;
@@ -63,6 +40,11 @@
         .sector-path {
             margin-left: 1rem;
         }
+        .admin-view-notice {
+            background: linear-gradient(45deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            border: none;
+            color: #6b2c91;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -73,53 +55,37 @@
                 <i class="fas fa-industry me-2"></i>Sectors Management
             </a>
             <div class="navbar-nav ms-auto">
-                <a class="nav-link text-white" th:href="@{/user/submissions}">
-                    <i class="fas fa-arrow-left me-1"></i>Back to Submissions
+                <a class="nav-link text-white" href="javascript:window.close()">
+                    <i class="fas fa-times me-1"></i>Close Window
                 </a>
             </div>
         </div>
     </nav>
 
     <div class="container py-4">
-        <!-- Page Header -->
-        <div class="row mb-4">
-            <div class="col-12 d-flex justify-content-between align-items-start">
+        <!-- Admin View Notice -->
+        <div class="alert admin-view-notice mb-4">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-user-shield fa-2x me-3"></i>
                 <div>
-                    <h1 class="fw-bold text-dark">
-                        <i class="fas fa-file-alt me-2 text-primary"></i>
-                        <span th:text="${submission.name}">Submission Details</span>
-                    </h1>
-                    <p class="text-muted">View and manage your sector submission details.</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <a th:href="@{/user/submission/{id}/edit(id=${submission.id})}" class="btn btn-outline-primary">
-                        <i class="fas fa-edit me-2"></i>Edit
-                    </a>
-                    <form th:if="${submission.isActive}" th:action="@{/user/submission/{id}/deactivate(id=${submission.id})}" method="post" style="display: inline;">
-                        <button type="submit" class="btn btn-outline-warning" onclick="return confirm('Are you sure you want to deactivate this submission?')">
-                            <i class="fas fa-pause me-2"></i>Deactivate
-                        </button>
-                    </form>
-                    <form th:if="${not submission.isActive}" th:action="@{/user/submission/{id}/activate(id=${submission.id})}" method="post" style="display: inline;">
-                        <button type="submit" class="btn btn-outline-success">
-                            <i class="fas fa-play me-2"></i>Activate
-                        </button>
-                    </form>
+                    <h5 class="mb-1">Admin View - User Submission</h5>
+                    <p class="mb-0">You are viewing this submission as an administrator. This is a read-only view.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Flash Messages -->
-        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>
-            <span th:text="${successMessage}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-
-        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle me-2"></i>
-            <span th:text="${errorMessage}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="fw-bold text-dark">
+                    <i class="fas fa-file-alt me-2 text-primary"></i>
+                    <span th:text="${submission.name}">Submission Details</span>
+                </h1>
+                <p class="text-muted">
+                    Submitted by: <strong th:text="${submission.user.person.firstName + ' ' + submission.user.person.lastName}">User Name</strong>
+                    (<span th:text="${submission.user.username}">username</span>)
+                </p>
+            </div>
         </div>
 
         <!-- Submission Details -->
@@ -134,8 +100,15 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label fw-bold text-muted">Name</label>
+                            <label class="form-label fw-bold text-muted">Submission Name</label>
                             <p class="mb-0" th:text="${submission.name}">Submission Name</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">Submitted By</label>
+                            <p class="mb-0">
+                                <span th:text="${submission.user.person.firstName + ' ' + submission.user.person.lastName}">User Name</span>
+                                <small class="text-muted">(<span th:text="${submission.user.username}">username</span>)</small>
+                            </p>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold text-muted">Created</label>
@@ -255,27 +228,16 @@
         <div class="row mt-4">
             <div class="col-12">
                 <div class="d-flex gap-2 justify-content-center">
-                    <a th:href="@{/user/submissions}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Back to Submissions
+                    <button onclick="window.close()" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Close Window
+                    </button>
+                    <a th:href="@{/admin}" class="btn btn-primary">
+                        <i class="fas fa-tools me-2"></i>Back to Admin Panel
                     </a>
-                    <a th:href="@{/user/submission/{id}/edit(id=${submission.id})}" class="btn btn-primary">
-                        <i class="fas fa-edit me-2"></i>Edit Submission
-                    </a>
-                    <form th:if="${submission.isActive}" th:action="@{/user/submission/{id}/deactivate(id=${submission.id})}" method="post" style="display: inline;">
-                        <button type="submit" class="btn btn-warning" onclick="return confirm('Are you sure you want to deactivate this submission?')">
-                            <i class="fas fa-pause me-2"></i>Deactivate
-                        </button>
-                    </form>
-                    <form th:if="${not submission.isActive}" th:action="@{/user/submission/{id}/activate(id=${submission.id})}" method="post" style="display: inline;">
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-play me-2"></i>Activate
-                        </button>
-                    </form>
                 </div>
             </div>
         </div>
     </div>
-
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

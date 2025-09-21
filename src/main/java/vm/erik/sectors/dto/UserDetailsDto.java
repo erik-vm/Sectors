@@ -1,14 +1,10 @@
 package vm.erik.sectors.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
-import vm.erik.sectors.model.Sector;
-import vm.erik.sectors.model.UserSubmission;
 
 import java.time.LocalDateTime;
-import java.util.Set;
-import java.util.UUID;
+import java.util.List;
 
 @Data
 @Builder
@@ -22,14 +18,14 @@ public class UserDetailsDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime lastLogin;
-    
+
     // Person details
     private String firstName;
     private String lastName;
-    
-    // Latest submission details
-    private UserSubmission latestSubmission;
-    
+
+
+    private List<SubmissionSummaryDto> submissions;
+
     // Convenience methods for templates
     public String getFullName() {
         if (firstName != null && lastName != null) {
@@ -37,19 +33,6 @@ public class UserDetailsDto {
         }
         return username;
     }
-    
-    public boolean isProfileComplete() {
-        return latestSubmission != null && 
-               latestSubmission.getAgreeToTerms() && 
-               latestSubmission.getSelectedSectors() != null && 
-               !latestSubmission.getSelectedSectors().isEmpty();
-    }
-    
-    public Set<Sector> getSelectedSectors() {
-        return latestSubmission != null ? latestSubmission.getSelectedSectors() : Set.of();
-    }
-    
-    public boolean getAgreeToTerms() {
-        return latestSubmission != null && latestSubmission.getAgreeToTerms();
-    }
+
+
 }

@@ -15,6 +15,8 @@ public interface UserSubmissionService {
 
     UserSubmission getUserSubmission(User user, Long submissionId);
 
+    UserSubmission getSubmissionById(Long submissionId);
+
     UserSubmission createSubmission(User user, UserSubmission submission);
 
     UserSubmission createSubmission(User user, UserSubmission submission, List<Long> sectorIds);
@@ -26,6 +28,10 @@ public interface UserSubmissionService {
     void deleteSubmission(User user, Long submissionId);
 
     long getUserSubmissionsCount(User user);
+
+    void deactivateSubmission(User user, Long submissionId);
+
+    void activateSubmission(User user, Long submissionId);
 
     /**
      * Get only the most specific (deepest) selected sectors, excluding parent sectors

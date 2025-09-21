@@ -218,4 +218,30 @@ public class UserController {
 
         return "redirect:/user/profile";
     }
+
+    @PostMapping("/submission/{id}/deactivate")
+    public String deactivateSubmission(@PathVariable Long id, Authentication authentication, RedirectAttributes redirectAttributes) {
+        try {
+            User currentUser = userService.getCurrentUser(authentication);
+            userSubmissionService.deactivateSubmission(currentUser, id);
+            redirectAttributes.addFlashAttribute("successMessage", "Submission deactivated successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error deactivating submission: " + e.getMessage());
+        }
+
+        return "redirect:/user/submissions";
+    }
+
+    @PostMapping("/submission/{id}/activate")
+    public String activateSubmission(@PathVariable Long id, Authentication authentication, RedirectAttributes redirectAttributes) {
+        try {
+            User currentUser = userService.getCurrentUser(authentication);
+            userSubmissionService.activateSubmission(currentUser, id);
+            redirectAttributes.addFlashAttribute("successMessage", "Submission activated successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error activating submission: " + e.getMessage());
+        }
+
+        return "redirect:/user/submissions";
+    }
 }

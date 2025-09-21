@@ -93,8 +93,5 @@ public class User extends BaseEntity implements UserDetails {
     }
 
 
-    public UserSubmission getLatestSubmission() {
-        UserSubmission[] userSubmissions = submissions.toArray(new UserSubmission[0]);
-        return userSubmissions.length > 0 ? userSubmissions[userSubmissions.length - 1] : null;
-    }
+
 }

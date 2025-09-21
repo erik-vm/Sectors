@@ -7,6 +7,7 @@ import vm.erik.sectors.dto.UserDetailsDto;
 import vm.erik.sectors.mapper.UserMapper;
 import vm.erik.sectors.model.User;
 import vm.erik.sectors.repository.UserRepository;
+import vm.erik.sectors.repository.UserSubmissionRepository;
 import vm.erik.sectors.service.AdminService;
 
 import java.util.ArrayList;
@@ -19,10 +20,12 @@ public class AdminServiceImpl implements AdminService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final UserSubmissionRepository userSubmissionRepository;
 
-    public AdminServiceImpl(UserRepository userRepository, UserMapper userMapper) {
+    public AdminServiceImpl(UserRepository userRepository, UserMapper userMapper, UserSubmissionRepository userSubmissionRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.userSubmissionRepository = userSubmissionRepository;
     }
 
     @Override
@@ -36,7 +39,7 @@ public class AdminServiceImpl implements AdminService {
                 .totalUsers(totalUsers)
                 .activeUsers(activeUsers)
                 .blockedUsers(blockedUsers)
-                .totalAdmins(getTotalAdminCount())
+                .totalSubmissions(getTotalSubmissionsCount())
                 .build();
     }
 
@@ -73,8 +76,8 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public long getTotalAdminCount() {
-        return userRepository.countByRolesRoleName(vm.erik.sectors.enums.RoleName.ADMIN);
+    public long getTotalSubmissionsCount() {
+        return userSubmissionRepository.count();
     }
 
 }
